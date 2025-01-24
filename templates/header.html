@@ -1,0 +1,37 @@
+
+    <header>
+        <div class="logobox">
+            <div class="logoimagebox">
+                <img src="path/to/your/image.jpg" alt="Logo">
+            </div>
+            <div class="logo">Yatnam Technologies</div>
+        </div>
+        <nav>
+            <ul class="menu">
+                <li><a href="#">Home</a></li>
+                {% for operation_title, operation_items in operations.items %}
+                    <li><a href="#"> {{ operation_title }} </a>
+                    {% if operation_items %}
+                        <ul class="submenu">
+                            {% for item_title, item_url in operation_items.items %}
+                                {% if item_url %}
+                                    <li><a href="{% url item_url %}">{{ item_title }}</a></li>
+                                {% else %}
+                                    <li><a href="#">{{ item_title }}</a></li>  <!-- Handle cases where item_url is empty -->
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                {% endfor %}
+            </li>
+            
+            </ul>
+        </nav>
+        <div class="timer-box">
+            <span id="timer">00:00:00</span>
+        </div>
+        <div class="profile-box">
+            <span>Profile</span>
+        </div>
+    </header>
+

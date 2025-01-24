@@ -1,0 +1,5 @@
+db.sqlite3
+mangage.py
+EMPPORTAL/__pycache__/*
+emp_portal_app/__pycache__/* 
+emp_portal_app/migrations/__pycache__/*

@@ -1,0 +1,78 @@
+# departments
+# create department - admin - level=1
+# update department - admin - level=1
+# delete department - admin - level=1
+# view departments - employee - level=3
+
+# employees
+# insert-employee               - admin - level=1
+# update-employee-any           - admin - level=1
+# update-employee-self          - employee - level=3
+# view-employees-limited-detail - employee - level=3
+# view-employees-with-detail    - admin - level=1
+
+# projects
+# create-project - admin - level=1
+# update-project - admin - level=1
+# delete-project - admin - level=1
+# view-projects - manager - level=2
+
+# project-assignations
+# create-project-assignation - mangager - level=2
+# update-project-assignation-any - admin - level=1
+# update-project-assignation-self - manager - level=2
+# view-project-assignations-any - admin - level=1
+# view-project-assignations-self - employee - level=3
+
+
+operations = {
+    "1": {
+        "Departments": {
+            "Create Department": "department_create",
+            "View Departments": "department_list"
+        },
+        "Employees": {
+            "Insert Employee": "",
+            "View Employees with detail": "employee_list"
+        },
+        "Projects": {
+            "CreateProject": "",
+            "Update Project": "",
+            "Delete Project": "",
+            "View Projects": ""
+        },
+        "Project Assignations": {
+            "Create Project Assignation": "",
+            "Update Project Assignation any": "",
+            "View Project Assignations any": ""
+        }
+    },
+    "2": {
+        "Departments": {
+            "View Departments": "department_list"
+        },
+        "Employees": {
+            "View Employees": "employee_list"
+        },
+        "Projects": {
+            "View Projects": ""
+        },
+        "Project Assignations": {
+            "Create Project Assignation": "",
+            "Update My Project Assignation": "",
+            "View My Project Assignations": ""
+        }
+    },
+    "3": {
+        "Departments": {
+            "View Departments": "department_list"
+        },
+        "Employees": {
+            "View Employees": "employee_list",
+            "View Project Assignations to me": ""
+        },
+        "Projects": {
+            "View Projects": ""
+        }
+    }
+}

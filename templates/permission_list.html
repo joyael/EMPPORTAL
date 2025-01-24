@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Permission List</title>
+    {% load static %}
+</head>
+<body>
+    <h1>Permissions</h1>
+    <a href="{% url 'permission_create' %}">Create New Permission</a>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Level</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for permission in permissions %}
+            <tr>
+                <td>{{ permission.name }}</td>
+                <td>{{ permission.level }}</td>
+                <td>
+                    <a href="{% url 'permission_update' permission.pk %}">Update</a>
+                    <form action="{% url 'permission_delete' permission.pk %}" method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

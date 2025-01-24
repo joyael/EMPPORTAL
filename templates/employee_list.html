@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee List</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Employees</h1>
+        <a href="{% url 'employee_create' %}" class="btn btn-primary mb-3">Create New Employee</a>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Employee ID</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for employee in employees %}
+                <tr>
+                    <td>{{ employee.employee_id }}</td>
+                    <td>{{ employee.first_name }}</td>
+                    <td>{{ employee.last_name }}</td>
+                    <td>
+                        <a href="{% url 'employee_update' employee.employee_id %}" class="btn btn-warning btn-sm">Update</a>
+                        <form action="{% url 'employee_delete' employee.employee_id %}" method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
