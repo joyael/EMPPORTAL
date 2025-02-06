@@ -6,23 +6,42 @@
     {% load static %}
     <title>{{ action }} Department</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    {% include 'main_linkings.html' %}
+    
+    <link rel="stylesheet" href="{% static 'css/departmentform.css' %}">
+    <script src="{% static 'js/department_form_validation.js' %}"></script>
 </head>
 <body>
+    {% include 'header.html' %}
     <div class="container mt-5">
-        <h1>{{ action }} Department</h1>
+        <div class="departmentformcontainer">
+        <div class="departmentformbox">
+        <div class="title-box">{{ action }} Department</div>
+        <div class="errorbar" id="errorbox"></div> 
         <form method="post">
             {% csrf_token %}
             <div class="form-group">
-                <label for=" id_department_name">Department Name:</label>
-                {{ form.department_name }}
+                <label for="id_department_name">Department Name:</label>
+                <div class="input-div">{{ form.department_name }}</div>
             </div>
             <div class="form-group">
                 <label for="id_description">Description:</label>
-                {{ form.description }}
+                <div class="input-div">{{ form.description }}</div>
             </div>
-            <button type="submit" class="btn btn-primary">{{ action }}</button>
+
+            <div class="buttons-div">
+                <button type="submit" class="mybutton">{{ action }}</button>
+                <button type="button" class="mybutton" onclick="redirectToUrl()" data-deplist-url="{% url 'department_list' %}" id="cancel_button">Cancel</button>
+                {% if action != 'update' %}
+                    <button type="submit" class="mybutton" name="add_new" value="true">Save and Add New</button>
+                {% endif %}
+            </div>
         </form>
-        <a href="{% url 'department_list' %}" class="btn btn-secondary">Cancel</a>
+
+        </div>
+        </div>
     </div>
+    {% include 'footer.html' %}
 </body>
 </html>

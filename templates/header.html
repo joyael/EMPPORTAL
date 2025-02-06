@@ -1,37 +1,203 @@
-
-    <header>
-        <div class="logobox">
-            <div class="logoimagebox">
-                <img src="path/to/your/image.jpg" alt="Logo">
-            </div>
-            <div class="logo">Yatnam Technologies</div>
-        </div>
-        <nav>
-            <ul class="menu">
-                <li><a href="#">Home</a></li>
-                {% for operation_title, operation_items in operations.items %}
-                    <li><a href="#"> {{ operation_title }} </a>
-                    {% if operation_items %}
-                        <ul class="submenu">
-                            {% for item_title, item_url in operation_items.items %}
-                                {% if item_url %}
-                                    <li><a href="{% url item_url %}">{{ item_title }}</a></li>
-                                {% else %}
-                                    <li><a href="#">{{ item_title }}</a></li>  <!-- Handle cases where item_url is empty -->
-                                {% endif %}
-                            {% endfor %}
-                        </ul>
-                    {% endif %}
+{% load static %}
+<script src="{% static 'js/message_bar.js' %}"></script>
+<script src="{% static 'js/logout.js' %}"></script>
+<script src="{% static 'js/logo.js' %}"></script>
+<script src="{% static 'js/side_bar.js' %}"></script>
+    <header id="header">
+    
+        <div class="message-bar" id="message-bar" style="display: none;">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="message">{{ message }}</div>
                 {% endfor %}
-            </li>
-            
-            </ul>
-        </nav>
-        <div class="timer-box">
-            <span id="timer">00:00:00</span>
+            {% endif %}
         </div>
-        <div class="profile-box">
-            <span>Profile</span>
+
+        <div class="headermainbox rowflexbox">
+            <div class="logobox">
+                <div class="logoimagebox">
+                    <img src="{% static 'images/yat_logo.png' %}" alt="Description of Image" class="logoimg">
+                </div>
+            </div>
+            <div class="headerrightbox">
+                <div class="navbarrowbox rowflexbox">
+                    <div class="navbarbox">
+                        <nav>
+                            <ul class="menu">
+                                <li><a href="{% url 'home' %}">Home</a></li>
+                                {% for operation_title, operation_items in operations.items %}
+                                    <li>
+                                        <a href="#">{{ operation_title }}</a>
+                                        {% if operation_items %}
+                                            <ul class="submenu">
+                                                {% for item_title, item_url in operation_items.items %}
+                                                    {% if item_url %}
+                                                        <li><a href="{% url item_url %}">{{ item_title }}</a></li>
+                                                    {% else %}
+                                                        <li><a href="#">{{ item_title }}</a></li>  <!-- Handle cases where item_url is empty -->
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </ul>
+                                        {% endif %}
+                                    </li> <!-- Moved this closing tag here -->
+                                {% endfor %}
+                            </ul>
+                        </nav>
+                    </div>
+                    <div class="dateTimeBox rowflexbox" id="id_date_time_desktop">
+                        <div class="dateTimeIcon">
+                            <img src="{% static 'images/clock_icon.png' %}">
+                        </div>
+                        <div class="date">
+                            DD-MM-YYYY
+                        </div>
+                        <div class="day">
+                            Monday
+                        </div>
+                        <div class="time">
+                            00:00:00
+                        </div>
+                    </div>
+                </div>
+
+                
+
+                <!-- Hamburger Menu Button -->
+                <div class="hamburger-menu" onclick="toggleMenu()">
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                </div>
+
+                <!-- Sidebar Navigation -->
+                <nav class="sidebar">
+                    <ul class="sidebar-menu">
+                        <li><a href="{% url 'home' %}">Home</a></li>
+                        {% for operation_title, operation_items in operations.items %}
+                        <li class="has-submenu">
+                            <a href="#" onclick="toggleSubmenu(event)">{{ operation_title }}</a>
+                                {% if operation_items %}
+                                    <ul class="submenum">
+                                        {% for item_title, item_url in operation_items.items %}
+                                            {% if item_url %}
+                                                <li><a href="{% url item_url %}">{{ item_title }}</a></li>
+                                            {% else %}
+                                                <li><a href="#">{{ item_title }}</a></li>  <!-- Handle cases where item_url is empty -->
+                                            {% endif %}
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </nav>
+
+                
+
+
+
+                <div class="belowrowbox rowflexbox">
+                    <div class="current_page_path rowflexbox">
+                        <div>Home</div>
+                        <div>Directives</div> 
+                    </div>
+                    <div class="account_features rowflexbox" id="id_account_features_desktop">
+                        <div class="checkintime">
+                            <p>00:00:00</p>
+                        </div>
+                        <div class="checkinbuttono">
+                        <div class="checkinbutton">
+                            <div class="semi-circle-left"></div>
+                            <div class="semicircle-button">CHECK IN</div>
+                            <div class="semi-circle-right"></div>
+                        </div>
+                        </div>
+                        <div class="notificationbox">
+                            <img src="{% static 'images/bell_icon.png' %}">
+                        </div>
+                        <div class="accountbox">
+                            <button id="id_accountbox" onclick="toggleProfileOption()">
+                                <img src="{% static 'images/human_photo.jpg' %}" class="account_photo">
+                                <img src="{% static 'images/down_arrow.png' %}" class="down_arrow">
+                            </button>
+                        </div>
+
+                        <div class="profile_logout_option">
+                            <div class="profile_case">
+                                <button class="profile-button">
+                                    <div><a class="name">Joyael Jose (User)</a><br></div>
+                                    <div><a class="profile_link">Profile</a></div>
+                                </button>
+                            </div>
+                            <div class="logout_case">
+                                <button class="logout-button">
+                                    <div class="logout-div"><a class="logout_link">Log out</a></div>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
         </div>
+            <!-- <button id="logoutButton">Logout</button>
+            <div id="logoutModal" class="modal">
+                <div class="modal-content">
+                    <h2>Are you sure you want to logout?</h2>
+                    <button id="confirmLogoutButton">Logout</button>
+                    <button id="cancelButton">Cancel</button>
+                </div>
+            </div> --> 
     </header>
 
+        <div class="tab-bar" id="id_date_time_tab">
+            <div class="dateTimeBox rowflexbox">
+                <div class="dateTimeIcon">
+                    <img src="{% static 'images/clock_icon.png' %}">
+                </div>
+                <div class="date">
+                    DD-MM-YYYY
+                </div>
+                <div class="day">
+                    Monday
+                </div>
+                <div class="time">
+                    00:00:00
+                </div>
+            </div>
+            <div class="account_features rowflexbox">
+                <div class="checkintime">
+                    <p>00:00:00</p>
+                </div>
+                <div class="checkinbuttono">
+                <div class="checkinbutton">
+                    <div class="semi-circle-left"></div>
+                    <div class="semicircle-button">CHECK IN</div>
+                    <div class="semi-circle-right"></div>
+                </div>
+                </div>
+                <div class="notificationbox">
+                    <img src="{% static 'images/bell_icon.png' %}">
+                </div>
+                <div class="accountbox">
+                    <button id="id_accountbox" onclick="toggleProfileOption()">
+                        <img src="{% static 'images/human_photo.jpg' %}" class="account_photo">
+                        <img src="{% static 'images/down_arrow.png' %}" class="down_arrow">
+                    </button>
+                </div>
+                <div class="profile_logout_option" id="plm">
+                    <div class="profile_case">
+                        <button class="profile-button">
+                            <div><a class="name">Joyael Jose (User)</a><br></div>
+                            <div><a class="profile_link">Profile</a></div>
+                        </button>
+                    </div>
+                    <div class="logout_case">
+                        <button class="logout-button">
+                            <div class="logout-div"><a class="logout_link">Log out</a></div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <button id="refreshButton" data-refresh-url="{% url 'refresh' %}" hidden>Refresh</button>

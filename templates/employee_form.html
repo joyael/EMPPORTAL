@@ -5,16 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ action }} Employee</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.2/css/bootstrap.min.css">
+    {% load static %}
+
+    {% include 'main_linkings.html' %}
+    <link rel="stylesheet" href="{% static 'css/employee_form.css' %}">
+    <script src="{% static 'js/employee_form_validation.js' %}"></script>
 </head>
 <body>
+    {% include 'header.html' %}
     <div class="container mt-5">
-        <h1>{{ action }} Employee</h1>
-        <form method="post">
+        <div class="employeeformcontainer">
+        <div class="employeeformbox">
+        <h1>{{ action }} Employee </h1>
+
+        <div id="errorbox"></div>
+        <form method="post" id="employeeForm">
             {% csrf_token %}
             {{ form.as_p }}
             <button type="submit" class="btn btn-primary">{{ action }}</button>
-            <a href="{% url 'employee_list' %}" class="btn btn-secondary">Cancel</a>
+            <br>
+            <button class="cancelbutton"><a href = "{% url 'employee_list' %}" class="btn btn-secondary">Cancel</a></button>
         </form>
+        </div>
+        </div>
     </div>
+    {% include 'footer.html' %}
 </body>
 </html>
+
+

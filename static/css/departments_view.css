@@ -1,0 +1,72 @@
+.departmentstablecontainer{
+    display:flex;
+    justify-content: center;
+}
+
+.departmentstablecontainer {
+    margin: 0 auto; 
+}
+
+.departmentstablebox {
+    background-color: #fff; 
+    padding: 20px; 
+    border-radius: 8px; 
+}
+
+.departmentstablebox h1 {
+    text-align: center; 
+    color: #333; 
+}
+
+.departmentstablebox .table {
+    width: 100%; /* Make the table take the full width of its container */
+    border-collapse: collapse; /* Collapse borders for a cleaner look */
+    margin-top: 20px; /* Add some margin above the table */
+}
+
+.departmentstablebox .table th, 
+.departmentstablebox .table td {
+    border: 1px solid #ddd; /* Add a light gray border to table cells */
+    padding: 10px; /* Add padding for better spacing */
+    text-align: left; /* Align text to the left */
+}
+
+.departmentstablebox .table th {
+    background-color: #f2f2f2; /* Light gray background for the header */
+    font-weight: bold; /* Make header text bold */
+}
+
+.departmentstablebox .table tr:nth-child(even) {
+    background-color: #f9f9f9; /* Alternate row color for better readability */
+}
+
+.departmentstablebox .table tr:hover {
+    background-color: #f1f1f1; /* Highlight row on hover */
+}
+
+.departmentstablebox .btn {
+    text-decoration: none; /* Remove underline from links */
+    padding: 5px 10px; /* Add padding to buttons */
+    border: none; /* Remove default button border */
+    border-radius: 4px; /* Rounded corners for buttons */
+    cursor: pointer; /* Change cursor to pointer on hover */
+}
+
+.departmentstablebox .btn-primary {
+    background-color: #444444; /* Bootstrap primary color */
+    color: white; /* White text color */
+}
+
+.departmentstablebox .btn-warning {
+    background-color: #444444; /* Bootstrap warning color */
+    color: white; /* White text color */
+}
+
+.departmentstablebox .btn-danger {
+    background-color: #444444; /* Bootstrap danger color */
+    color: white; /* White text color */
+}
+
+.departmentstablebox .btn:hover {
+    opacity: 0.8; /* Slightly reduce opacity on hover */
+}

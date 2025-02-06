@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password
 
-# Create your models here.
+#Create your models here.
 
 class RefreshToken(models.Model):
     id = models.AutoField(primary_key=True)
@@ -28,6 +28,7 @@ class Permission(models.Model):
     def __str__(self):
         return self.name
     
+    
 
 class Department(models.Model):
     department_id = models.AutoField(primary_key=True)
@@ -43,7 +44,7 @@ class Department(models.Model):
 
 class Employee(models.Model): 
     employee_id = models.AutoField(primary_key=True) 
-    first_name = models.CharField(max_length=50) 
+    first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50) 
     DOB = models.DateField() 
     email = models.EmailField(unique=True) 
@@ -79,6 +80,19 @@ class Employee(models.Model):
 
     password_hash = models.CharField(max_length=128)  # Hashed password
     created_at = models.DateTimeField(auto_now_add=True)
+    EMPLOYEE_STATUS_CHOICES = [
+        ('resigned', 'Resigned'),
+        ('terminated', 'Terminated'),
+        ('temporarily_not_exists', 'Temporarily not Exists'),
+        ('deceased', 'Deceased'),
+        ('active', 'Active'),
+        ('not_active','Not Active'),
+    ]
+    status = models.CharField(
+        max_length=50,
+        choices= EMPLOYEE_STATUS_CHOICES,
+        default='active',
+    )
 
     def save(self, *args, **kwargs):
         if not self.password_hash.startswith('pbkdf2_sha256$'):
@@ -90,3 +104,31 @@ class Employee(models.Model):
 
     class Meta:
         db_table = 'employees'
+
+
+
+class Project(models.Model):
+    project_id = models.AutoField(primary_key=True)
+    project_name = models.CharField(max_length=200)
+    manager = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True, blank=True)
+    STATUS_CHOICES = [
+        ('not_started', 'Not Started'),
+        ('started', 'Started'),
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+        ('on_hold', 'On Hold'),
+        ('withdrawn', 'Withdrawn'),
+        ('pending', 'Pending'),
+        ('cancelled', 'Cancelled'),
+        ('delayed', 'Delayed'),
+        ('archived', 'Archived'),
+    ]
+    status = models.CharField(max_length=128, choices=STATUS_CHOICES)
+    comment = models.CharField(max_length=200,blank=True,null=True)
+    description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add = True)
+    start_date = models.DateTimeField(null=True, blank=True)
+    end_date = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return self.project_name

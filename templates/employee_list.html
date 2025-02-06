@@ -5,17 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee List</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.2/css/bootstrap.min.css">
+    {% load static %}
+
+    {% include 'main_linkings.html' %}
+    
+    <link rel="stylesheet" href="{% static 'css/employees_view.css' %}">
 </head>
 <body>
+    {% include 'header.html' %}
+
+
     <div class="container mt-5">
+        <div class = "employeestablecontainer">
+        <div class = "employeestablebox">
         <h1>Employees</h1>
-        <a href="{% url 'employee_create' %}" class="btn btn-primary mb-3">Create New Employee</a>
+        {% if level <= 1 %} <a href="{% url 'employee_create' %}" class="btn btn-primary mb-3">Create New Employee</a> {% endif %}
         <table class="table">
             <thead>
                 <tr>
                     <th>Employee ID</th>
                     <th>First Name</th>
                     <th>Last Name</th>
+                    <th>Status</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -25,17 +36,21 @@
                     <td>{{ employee.employee_id }}</td>
                     <td>{{ employee.first_name }}</td>
                     <td>{{ employee.last_name }}</td>
+                    <td>{{ employee.get_status_display }}</td>
+
                     <td>
+                        {% if level <= 1 %}
                         <a href="{% url 'employee_update' employee.employee_id %}" class="btn btn-warning btn-sm">Update</a>
-                        <form action="{% url 'employee_delete' employee.employee_id %}" method="post" style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                        </form>
+                        <a href="{% url 'employee_disable' employee.employee_id %}" class="btn btn-warning btn-sm">Disable</a>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
+        </div>
     </div>
+    </div>
+    {% include 'footer.html' %}
 </body>
 </html>

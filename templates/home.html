@@ -5,13 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/header.css' %}">
-    <link rel="stylesheet" href="{% static 'css/footer.css' %}">   
+
+    {% include 'main_linkings.html' %}
 </head>
 <body>
     {% include 'header.html' %}
-
-
 
     {% include 'footer.html' %}
 </body>

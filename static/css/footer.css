@@ -8,4 +8,17 @@ footer p {
     margin: 0;
     font-size: 14px;
     color: #666;
+    font-family: sans-serif;
+}
+
+@media (max-width: 768px) {
+  footer p {
+    font-size: 14px; /* Adjusted to a larger size for 768px */
+  }
+}
+
+@media (max-width: 576px) {
+  footer p {
+    font-size: 12px; /* Smaller size for 576px and below */
+  }
 }

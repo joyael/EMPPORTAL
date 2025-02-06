@@ -1,64 +1,68 @@
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
+body{
+    font-family: chandas;
 }
 
 header {
-    background-color: #333;
-    color: white;
-    padding: 0px 20px;
+    color:black;
+    padding:0px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    font-size: 10px;
+    font-family: sans-serif;
+    letter-spacing: 1px;
 }
 
 .logobox {
     display: flex;
     align-items: center;
+    padding:0px;
+    margin: 0px;
 }
 
 .logoimagebox {
     flex-shrink: 0;
+    padding:0px;
+    margin: 0px;
 }
 
 .logoimagebox img {
-    width: 100px;
-    height: auto;
-    object-fit: cover;
+    width:auto;
+    object-fit: fill;
+    max-height: 80px;
+    padding:0px;
+    margin-bottom: 0px;
 }
-
-.logo {
-    margin-left: 15px;
-    font-size: 24px;
-    font-weight: bold;
-}
-
 
 nav {
     position: relative;
+    width: 100%;
 }
 
 .menu {
     list-style: none;
-    padding: 0;
     margin: 0;
     display: flex;
+    background-color: #f1ffff;
+    padding: 0px 20px; /* Combined padding */
 }
 
 .menu > li {
     position: relative;
+    box-sizing: border-box;
+    padding: 5px 0px; /* Combined padding */
 }
 
 .menu > li > a {
-    color: white;
+    color: black;
     text-decoration: none;
     padding: 15px 20px;
     display: block;
+    border-bottom: 1px solid #f1ffff;
 }
 
 .menu > li:hover > a {
-    background-color: #555;
+    border-bottom: 1px solid black;
 }
 
 .submenu {
@@ -66,65 +70,450 @@ nav {
     position: absolute;
     top: 100%;
     left: 0;
-    background-color: #444;
+    background-color: white;
     list-style: none;
     padding: 0;
     margin: 0;
     z-index: 1000;
-    width:auto;
-}
-
-.submenu li {
-    position: relative;
 }
 
 .submenu li a {
     padding: 10px 20px;
-    color: white;
+    color: black;
     text-decoration: none;
     display: block;
 }
-
+.submenu li:hover {
+    background-color: rgb(196, 190, 190);
+}
 .menu > li:hover .submenu {
     display: block;
 }
 
-.submenu .submenu {
-    left: 100%;
-    top: 0;
-}
-
-.submenu .submenu li a {
-    padding: 10px 20px;
-    background-color: #555;
-}
-
-.submenu .submenu li a:hover {
-    background-color: #666;
-}
-
-.timer-box {
-    margin-left: 20px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+.rowflexbox {
     display: flex;
-    align-items: center;
-    font-size: 16px;
+    flex-direction: row;
 }
 
-.profile-box {
-    margin-left: 20px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    display: flex;
+.belowrowbox {
+    justify-content: space-between;
+    background-color: #fff8f3;
+    color: black;
+}
+
+.headermainbox {
+    width: 100%;
     align-items: center;
-    font-size: 16px;
+    justify-content: left;
+    padding:0px;
+    margin: 0px;
+}
+
+.headerrightbox {
+    flex-grow: 1;
+    display: flex; /* Ensure it uses flexbox */
+    flex-direction: column; /* Stack items vertically */
+    padding:0px;
+    margin: 0px;
+}
+
+.navbarrowbox {
+    display: flex; /* Ensure it uses flexbox */
+    justify-content: space-between; /* Space between navbar and dateTimeBox */
+    align-items: center; /* Center items vertically */
+}
+
+.dateTimeBox {
+    display: flex; /* Ensure it uses flexbox */
+    align-items: center; /* Center items vertically */
+    margin:0px;
+}
+
+.navbarbox {
+    flex-grow: 1; /* Allow navbarbox to take available space */
+    display: flex; /* Ensure it uses flexbox */
+}
+
+.dateTimeBox .div {
+    padding: 15px;
+}
+.dateTimeIcon{
+    padding-right:10px;
+}
+
+.current_page_path div{
+    padding: 15px;
+}
+
+.checkintime{
+    padding: 5px 15px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+.checkintime p{
+    padding: 0px;
+    margin:0px;
+}
+
+
+
+.checkinbuttono{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.checkinbutton {
+    padding:0px;
+    width:90px;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    grid-template-columns: 1fr 4fr 1fr;
+    gap: 0px;
+}
+.semicircle-button {
+    background-color: red;
+    border: none;
+    color: white;
+    height:30px;
+    width:60px;
+    font-size:10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    margin: 0px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.semi-circle-left{
+    width: 15px; 
+    height: 30px; 
+    background-color: #ff0000; /* Example color */
+    border-radius: 15px 0 0 15px;  /* Left-facing semicircle */
+}
+.semi-circle-right{
+    width: 15px; 
+    height: 30px; 
+    background-color: #ff0000; /* Example color */
+    border-radius: 0 15px 15px 0;  
+}
+
+.id_date_time_tab{
+    display: none;
+}
+
+
+.notificationbox{
+    padding: 5px 15px;
+    display: grid;
+    place-items: center;
+}
+
+.notificationbox img{
+    height:30px;
+    width:30px;
+}
+
+.dateTimeBox div{
+    padding: 15px;
+}
+
+.dateTimeIcon img {
+    width: 20px !important;
+    height: 20px !important;
+}
+
+
+.accountbox {
+    display: inline-block; /* Allows the button to fit its content */
+    padding: 0px 15px;
+    display: grid;
+    place-items: center;
+}
+
+#id_accountbox {
+    display: flex; /* Use flexbox for alignment */
+    align-items: center; /* Center items vertically */
+    border: 2px solid gray; /* Gray border */
+    border-radius: 10px; /* Rounded edges */
+    padding: 3px; /* Padding for spacing */
+    background-color: white; /* Background color */
+    cursor: pointer; /* Pointer cursor on hover */
+    margin-bottom: 0px;
+}
+
+.account_photo {
+    width: 25px; /* Set width for the photo */
+    height: 25px; /* Set height for the photo */
+    border-radius: 50%; /* Make the photo round */
+    margin-right: 10px; /* Space between photo and arrow */
+}
+
+.down_arrow {
+    width: 15px; /* Set width for the down arrow */
+    height: 15px; /* Set height for the down arrow */
+}
+
+.account_features{
+    position: relative;
+}
+
+.profile_logout_option{
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: 100%;
+    right:0;
+    padding:0px 5px;
+    border: 1px solid black;
+}
+
+.profile_logout_option.show{
+    display: block;
+}
+.profile_case{
+    padding: 0px;
+    margin: 0px;
+    cursor: pointer;
+}
+.profile_case div{
+    padding:10px;
+}
+.logout_case div{
+    padding:10px;
+}
+
+.name{
+    font-weight: bold;
+}
+
+.profile_case a{
+    text-align: center;
+    padding: 5px;
+    font-size: 12px;
+    width:100%;
+    margin-top:10px;
+    margin-bottom:10px;
+}
+
+.profile_link:hover, .logout_link:hover {
+    background-color: #ccc;
+}
+.profile-button{
+    padding: 0px;
+    margin: 0px;
+    background-color: white;
+    border-bottom: 1px solid #777;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+}
+.profile-button:hover{
+    background-color: #ccc;
     cursor: pointer;
 }
 
-.profile-box:hover {
-    background-color: #fcfcfc;
-    color:#000000;
+.logout-button{
+    padding: 0px;
+    margin: 0px;
+    background-color: white;
+    text-align:center;
+    width: 100%;
+    border:none;
 }
+.logout-button:hover{
+    background-color: #ccc;
+    cursor: pointer;
+}
+
+.logout-div{
+    padding: 5px;
+
+    font-size: 12px;
+}
+
+.tab-bar .account_features{
+    width:fit-content;
+}
+
+
+
+
+
+
+.tab-bar{
+    display: none;
+    flex-direction: row;
+    justify-content: space-between;
+    font-size: 10px;
+    font-family: sans-serif;
+    letter-spacing: 1px;
+}
+
+
+
+/* Hamburger Menu */
+.hamburger-menu {
+    display: none;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    cursor: pointer;
+    z-index: 1000;
+}
+
+.bar {
+    width: 20px;
+    height: 2px;
+    background-color: #333;
+    margin: 6px 0;
+    transition: 0.4s;
+}
+
+/* Sidebar Menu */
+.sidebar {
+    position: fixed;
+    top: 0;
+    right: -200px;  /* Initially hidden */
+    width: 200px;
+    height: 100%;
+    background-color: #dddd;
+    transition: right 0.3s ease-in-out;
+    padding-top: 40px;
+}
+
+/* Sidebar Active State */
+.sidebar.active {
+    right: 0;
+}
+
+/* Sidebar Menu Items */
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-menu li {
+    padding: 10px;
+    text-align: center;
+    position: relative;
+}
+
+.sidebar-menu li a {
+    color: black;
+    text-decoration: none;
+    font-size: 12px;
+    display: block;
+    transition: 0.3s;
+    padding: 5px 10px;
+}
+
+/* Hover Effect */
+.sidebar-menu li a:hover {
+    background-color: #bbb;
+}
+
+/* Submenu */
+.submenum {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: none; 
+    background-color: #999;
+}
+
+.submenum li {
+    padding: 5px;
+}
+
+.submenum li a {
+    font-size: 10px;
+    display: block;
+    padding: 5px 0;
+}
+
+.submenum.show {
+    display: block;
+}
+
+
+
+@media (max-width: 1200px) {
+
+    #id_date_time_desktop{
+        display: none;
+    }
+
+    #id_account_features_desktop{
+        display: none;
+    }
+
+    #id_date_time_tab{
+        display: flex;
+    }
+}
+
+@media (max-width: 768px) {
+    .menu{
+        padding: 5px 10px;
+    }
+    .current_page_path div{
+        padding: 5px 10px;
+    }
+    .dateTimeBox div{
+        padding: 5px 10px;
+    }
+    .checkintime{
+        padding: 5px 10px;
+    }
+    .notificationbox{
+        padding: 5px 10px;
+    }
+    .accountbox{
+        padding: 0px 10px;
+    }
+    .menu li a{
+        padding: 5px 10px;
+    }
+    .logoimagebox img {
+        max-height: 60px;
+    }
+    .notificationbox img{
+        height:20px;
+        width:20px;
+    }
+    #id_accountbox {
+        border: 1px solid gray; 
+        padding: 3px; 
+    }
+    .down_arrow {
+        width: 10px; /* Set width for the down arrow */
+        height: 10px; /* Set height for the down arrow */
+    }
+}
+
+@media (max-width: 576px) {
+    #id_date_time_tab{
+        flex-direction:column;
+    }
+    .navbarrowbox{
+        display: none;
+    }
+    .belowrowbox{
+        display: none;
+    }
+    .hamburger-menu{
+        display: block;
+    }
+    .account_features{
+        width: fit-content;
+    }
+}
+
+

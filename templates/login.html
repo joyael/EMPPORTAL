@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="{% static 'css/header.css' %}">
     <link rel="stylesheet" href="{% static 'css/footer.css' %}"> 
     <link rel="stylesheet" href="{% static 'css/loginform.css' %}"> 
+    <script src="{% static 'js/employee_login_validation.js' %}"></script>
 </head>
 <body>
 
@@ -16,7 +17,8 @@
     <div class="loginformcontainer">
         <div class="loginformbox">
             <h2>Login</h2>
-            <form method="POST" action="{% url 'login' %}">
+            <div id="errorbox"></div>
+            <form method="POST" action="{% url 'login' %}" id="loginForm">
                 {% csrf_token %}
                 <div class="form-group">
                     <label for="email">Email:</label>

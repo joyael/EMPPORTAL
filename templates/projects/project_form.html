@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static %}
+    <title>{{ action }} Project</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    {% include 'main_linkings.html' %}
+    
+    <link rel="stylesheet" href="{% static 'css/departmentform.css' %}">
+    <script src="{% static 'js/project_form_validation.js' %}"></script>
+</head>
+<body>
+    {% include 'header.html' %}
+    <div class="container mt-5">
+        <div class="projectformcontainer">
+        <div class="projectformbox">
+        <h1>{{ action }} Project</h1>
+        <div class="errorbar" id="errorbox"></div>
+        <form method="post" id="projectForm">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">{{ action }}</button>
+        </form>
+        <br>
+        <button class="cancelbutton"><a href = "{% url 'project_list' %}" class="btn btn-secondary">Cancel</a></button>
+        </div>
+        </div>
+    </div>
+    {% include 'footer.html' %}
+</body>
+</html>

@@ -3,27 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Delete Department</title>
-    {% load static %}
+    <title>Delete Employee</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.2/css/bootstrap.min.css">
+    {% load static %}
+
     {% include 'main_linkings.html' %}
-    <link rel="stylesheet" href="{% static 'css/department_confirm_delete.css' %}">
+    <link rel="stylesheet" href="{% static 'css/employee_confirm_delete.css' %}">
+
 </head>
 <body>
     {% include 'header.html' %}
     <div class="container mt-5">
-        <div class="department_confirm_delete_container">
-        <div class="department_confirm_delete_box">
-
-        <h1>Delete Department</h1>
-        <p>Are you sure you want to delete "{{ department.department_name }}"?</p>
+        <div class="employee_confirm_delete_container">
+        <div class="employee_confirm_delete_box">
+        <h1>Delete Project</h1>
+        <p>Are you sure you want to delete {{ project.project_name }} ?</p>
         <form method="post">
             {% csrf_token %}
             <button type="submit" class="btn btn-danger">Confirm Delete</button>
+            <a href="{% url 'project_list' %}" class="btn btn-secondary">Cancel</a>
         </form>
-
-        <a href="{% url 'department_list' %}" class="btn btn-secondary">Cancel</a>
-    
+        </div>
         </div>
     </div>
     {% include 'footer.html' %}

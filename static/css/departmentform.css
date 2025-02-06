@@ -1,0 +1,100 @@
+.departmentformcontainer {
+    max-width: 600px; /* Set a maximum width for the container */
+    margin: 0 auto; /* Center the container */
+    padding: 20px; /* Add padding around the container */
+    border-radius: 8px; /* Rounded corners for the container */
+    font-family: sans-serif;
+}
+
+.departmentformbox .title-box {
+    text-align: left; 
+    color: black; 
+    margin-bottom: 20px;
+    font-family: sans-serif;
+    font-size: 18px;
+    font-weight: bold;
+    padding-bottom: 5px;
+    border-bottom: 1px solid gray;
+}
+
+.departmentformbox .form-group {
+    margin-bottom: 15px; /* Space between form groups */
+}
+
+.departmentformbox label {
+    display: block; /* Make label a block element */
+    margin-bottom: 5px; /* Space below the label */
+    color: #444; 
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.departmentformbox .input-div {
+    border: 1px solid white;
+    padding : 0px;
+    margin : 0px;
+}
+
+.departmentformbox input[type="text"],
+.departmentformbox textarea {
+    
+    width: fit-content; 
+    padding: 10px; /* Padding inside the inputs */
+    border: 1px solid #bbb; /* Light gray border */
+    border-radius: 4px; /* Rounded corners */
+    box-sizing: border-box; /* Include padding and border in element's total width */
+    transition: border-color 0.3s; /* Smooth transition for border color */
+}
+
+.departmentformbox input[type="text"]:focus,
+.departmentformbox textarea:focus {
+    border-color: #333; /* Change border color on focus */
+    outline: none; /* Remove default outline */
+}
+.departmentformbox input[type="text"]:focus,
+.departmentformbox textarea:focus .input-div{
+    border-color: #333;
+}
+
+.departmentformbox button.btn {
+    width: 100%; /* Full width for the button */
+    padding: 10px; /* Padding inside the button */
+    background-color: #007bff; /* Bootstrap primary color */
+    color: white; /* White text color */
+    border: none; /* Remove default button border */
+    border-radius: 4px; /* Rounded corners */
+    cursor: pointer; /* Change cursor to pointer on hover */
+    transition: background-color 0.3s; /* Smooth transition for background color */
+}
+
+
+
+ .departmentformbox .errorbar{
+    display: none;
+    color: red;
+ }
+
+ .departmentformbox .errorbarvisible{
+    display: block;
+    color: red;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-size: 15px;
+ }
+
+.buttons-div{
+    display: flex;
+    flex-direction: row;
+    justify-content: right;
+}
+.mybutton{
+    margin-left: 10px;
+    border-radius: 3px;
+    border: none;
+    background-color: #333;
+    padding: 5px;
+    font-size: 14px;
+    color: white;
+    cursor: pointer;
+}
+

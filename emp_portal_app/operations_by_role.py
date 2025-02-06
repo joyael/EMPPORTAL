@@ -32,14 +32,14 @@ operations = {
             "View Departments": "department_list"
         },
         "Employees": {
-            "Insert Employee": "",
-            "View Employees with detail": "employee_list"
+            "Insert Employee": "employee_create",
+            "View Employees with detail": "employee_list",
         },
         "Projects": {
-            "CreateProject": "",
+            "CreateProject": "project_create",
             "Update Project": "",
             "Delete Project": "",
-            "View Projects": ""
+            "View Projects": "project_list"
         },
         "Project Assignations": {
             "Create Project Assignation": "",
@@ -52,7 +52,8 @@ operations = {
             "View Departments": "department_list"
         },
         "Employees": {
-            "View Employees": "employee_list"
+            "View Employees": "employee_list",
+            "Employees under me":"employees_under_manager",
         },
         "Projects": {
             "View Projects": ""
@@ -72,7 +73,7 @@ operations = {
             "View Project Assignations to me": ""
         },
         "Projects": {
-            "View Projects": ""
+            "View Projects": "project_list"
         }
     }
 }
