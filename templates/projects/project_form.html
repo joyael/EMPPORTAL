@@ -15,19 +15,23 @@
 <body>
     {% include 'header.html' %}
     <div class="container mt-5">
-        <div class="projectformcontainer">
-        <div class="projectformbox">
-        <h1>{{ action }} Project</h1>
+        <div class="departmentformcontainer">
+        <div class="departmentformbox">
+        <div class="title-box">{{ action }} Project</div>
         <div class="errorbar" id="errorbox"></div>
         <form method="post" id="projectForm">
             {% csrf_token %}
             {{ form.as_p }}
-            <button type="submit" class="btn btn-primary">{{ action }}</button>
+            <div class="buttons-div">
+                <button type="submit" class="mybutton">{{ action }}</button>
+                <button type="button" class="mybutton" onclick="gotoprojectlist()" data-projectlist-url="{% url 'project_list' %}" id="cancel_button">Cancel</button>
+                {% if action != 'update' %}
+                    <button type="submit" class="mybutton" name="add_new" value="true">Save and Add New</button>
+                {% endif %}
+            </div>
         </form>
-        <br>
-        <button class="cancelbutton"><a href = "{% url 'project_list' %}" class="btn btn-secondary">Cancel</a></button>
         </div>
-        </div>
+    </div>
     </div>
     {% include 'footer.html' %}
 </body>

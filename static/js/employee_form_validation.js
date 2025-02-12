@@ -81,3 +81,11 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 });
+
+
+
+function gotoemployeelist() {
+    const button = document.getElementById('cancel_button');
+    const emplistUrl = button.getAttribute('data-emplist-url');
+    window.location.href = emplistUrl;
+}

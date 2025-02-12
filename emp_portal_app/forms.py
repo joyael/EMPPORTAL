@@ -1,6 +1,7 @@
+import datetime
 from django import forms
 from django.core.validators import MaxLengthValidator,MinValueValidator, RegexValidator
-from .models import Permission, Department, Employee, Project
+from .models import Permission, Department, Employee, Project, ProjectAssignation
 from django.core.exceptions import ValidationError
 import re
 
@@ -171,9 +172,27 @@ class ProjectForm(forms.ModelForm):
             'status': forms.Select(attrs={'class': 'form-control'}),
             'comment': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter a comment'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter project description', 'rows': 4}),
-            'start_date': forms.DateTimeInput(attrs={'class': 'form-control', 'placeholder': 'YYYY-MM-DD HH:MM'}),
-            'end_date': forms.DateTimeInput(attrs={'class': 'form-control', 'placeholder': 'YYYY-MM-DD HH:MM'}),
+            'start_date': forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'YYYY-MM-DD', 'type': 'date'}),
+            'end_date': forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'YYYY-MM-DD', 'type': 'date'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super(ProjectForm, self).__init__(*args, **kwargs)
+        self.fields['manager'].queryset = Employee.objects.filter(status='active', role='2')  # Assuming '2' is the role for Manager
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start_date = cleaned_data.get('start_date')
+        end_date = cleaned_data.get('end_date')
+        description = cleaned_data.get('description')
+
+        if start_date and end_date and end_date <= start_date:
+            raise ValidationError('End date must be greater than start date.')
+        
+        if description and len(description) > 1000:
+            raise ValidationError('Description must not exceed 1000 characters.')
+
+        return cleaned_data
 
 
 class EmployeeStatusForm(forms.ModelForm):
@@ -188,3 +207,50 @@ class EmployeeStatusForm(forms.ModelForm):
         widgets = {
             'status': forms.Select(),
         }
+
+
+
+
+class ProjectAssignationForm(forms.ModelForm):
+    class Meta:
+        model = ProjectAssignation
+        fields = [
+            'project',
+            'employee',
+            'role',
+            'status',
+            'start_date',
+            'end_date',
+        ]
+        widgets = {
+            'project': forms.Select(attrs={'class': 'form-control'}),
+            'employee': forms.Select(attrs={'class': 'form-control'}),
+            'role': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter role'}),
+            'status': forms.Select(attrs={'class': 'form-control'}),
+            'start_date': forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'YYYY-MM-DD', 'type': 'date'}),
+            'end_date': forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'YYYY-MM-DD', 'type': 'date'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        # Extract the logged-in user from kwargs
+        self.logged_in_user = kwargs.pop('logged_in_user', None)
+        super(ProjectAssignationForm, self).__init__(*args, **kwargs)
+
+        if self.logged_in_user:
+            self.fields['project'].queryset = Project.objects.filter(manager=self.logged_in_user)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        project = cleaned_data.get('project')
+        assigning_manager = cleaned_data.get('assigning_manager')
+        start_date = cleaned_data.get('start_date')
+        end_date = cleaned_data.get('end_date')
+
+        if project and assigning_manager:
+            if project.manager != assigning_manager:
+                raise ValidationError('The assigning manager must be the manager of the selected project.')
+
+        if start_date and end_date and end_date <= start_date:
+            raise ValidationError('End date must be greater than start date.')
+
+        return cleaned_data

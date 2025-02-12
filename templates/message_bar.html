@@ -1,0 +1,20 @@
+{% load static %}
+
+<div class="message-bar" id="message-bar" style="display: none;">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="message">
+                {% if message.tags == 'success' %}
+                    <div class="message-icon"> <img src="{% static 'images/green_tick.png' %}"></div>
+                {% elif message.tags == 'error' %}
+                    <div class="message-icon"> <img src="{% static 'images/wrong_cross.png' %}"></div>
+                {% elif message.tags == 'warning' %}
+                    <div class="message-icon"> <img src="{% static 'images/warning.png' %}"></div>
+                {% elif message.tags == 'info' %}
+                    <div class="message-icon"> <img src="{% static 'images/info_icon.png' %}"></div>
+                {% endif %}
+                <div>{{ message }}</div>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>

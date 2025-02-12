@@ -3,31 +3,34 @@
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background-color: #f4f4f4;
+    background-color: white;
 }
 
 .employeeformbox {
-    background-color: #ffffff;
-    border-radius: 8px;
     padding: 20px;
     width: 400px;
 }
 
-.employeeformbox h1 {
-    text-align: center;
-    color: #333;
+.employeeformbox .title-box {
+    text-align: left; 
+    color: black; 
     margin-bottom: 20px;
+    font-family: sans-serif;
+    font-size: 18px;
+    font-weight: bold;
+    padding-bottom: 5px;
+    border-bottom: 1px solid gray;
 }
 
 .employeeformbox p {
-    margin-bottom: 15px;
+    margin-bottom: 12px;
+    font-size: 12px;
 }
 
 .employeeformbox label {
     display: block;
     font-weight: bold;
     margin-bottom: 5px;
-    color: #555;
 }
 
 .employeeformbox input[type="text"],
@@ -35,7 +38,7 @@
 .employeeformbox input[type="date"],
 .employeeformbox input[type="password"],
 .employeeformbox select {
-    width: 100%;
+    width: fit-content;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -48,50 +51,24 @@
 .employeeformbox input[type="date"]:focus,
 .employeeformbox input[type="password"]:focus,
 .employeeformbox select:focus {
-    border-color: #007bff;
+    border-color: black;
     outline: none;
 }
 
-.employeeformbox button {
-    width: 100%;
-    padding: 10px;
-    background-color: #007bff;
-    color: #ffffff;
+
+
+.buttons-div{
+    display: flex;
+    flex-direction: row;
+    justify-content: right;
+}
+.mybutton{
+    margin-left: 10px;
+    border-radius: 3px;
     border: none;
-    border-radius: 4px;
-    font-size: 16px;
+    background-color: #333;
+    padding: 5px;
+    font-size: 14px;
+    color: white;
     cursor: pointer;
-    transition: background-color 0.3s;
-    margin-top: 10px;
 }
-
-.employeeformbox button:hover {
-    background-color: #0056b3;
-}
-
-/* .employeeformbox a {
-    display: inline-block;
-    width: 100%;
-    text-align: center;
-    padding: 10px;
-    background-color: #6c757d;
-    color: #ffffff;
-    border-radius: 4px;
-    text-decoration: none;
-    margin-top: 10px;
-    transition: background-color 0.3s;
-} */
-
-.employeeformbox .cancelbutton {
-    background-color: #6c757d;
-}
-.employeeformbox .cancelbutton a{
-    color: #ffffff;
-    text-decoration: none;
-    background-color: inherit;
-}
-
-.employeeformbox .cancelbutton:hover {
-    background-color: #5a6268;
-}
-

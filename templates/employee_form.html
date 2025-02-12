@@ -16,15 +16,21 @@
     <div class="container mt-5">
         <div class="employeeformcontainer">
         <div class="employeeformbox">
-        <h1>{{ action }} Employee </h1>
+            <div class="title-box">{{ action }} Employee </div>
 
         <div id="errorbox"></div>
         <form method="post" id="employeeForm">
             {% csrf_token %}
             {{ form.as_p }}
-            <button type="submit" class="btn btn-primary">{{ action }}</button>
-            <br>
-            <button class="cancelbutton"><a href = "{% url 'employee_list' %}" class="btn btn-secondary">Cancel</a></button>
+
+            <div class="buttons-div">
+                <button type="submit" class="mybutton">{{ action }}</button>
+                <button type="button" class="mybutton" onclick="gotoemployeelist()" data-emplist-url="{% url 'employee_list' %}" id="cancel_button">Cancel</button>
+                {% if action != 'update' %}
+                    <button type="submit" class="mybutton" name="add_new" value="true">Save and Add New</button>
+                {% endif %}
+            </div>
+
         </form>
         </div>
         </div>

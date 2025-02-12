@@ -2,7 +2,7 @@
 
 function applyMessageBarStyles(element) {
     if (element) {
-        element.style.color = 'white';
+        element.style.color = 'black';
         element.style.padding = '10px';
         element.style.textAlign = 'center';
         element.style.position = 'absolute';
@@ -15,12 +15,9 @@ function applyMessageBarStyles(element) {
         element.style.zIndex = '1000';
         element.style.fontSize = '16px';
         element.style.width = '100%';
-        element.style.border = '1px solid gray';
-        element.style.borderRadius = '4px';
         element.style.display = 'flex';
         element.style.justifyContent = 'center';
         element.style.alignItems = 'center';
-        element.style.opacity = '0';
     }
 }
 
@@ -38,14 +35,14 @@ function showMessageBar() {
     const messageBar = document.getElementById('message-bar');
     if (messageBar.innerHTML.trim() !== '') {
         applyMessageBarStyles(messageBar);
-        setTimeout(() => {
+        messageBar.style.display = 'flex'; // Ensure the message bar is visible
+
+        setTimeout(() => { //  setTimeout function
             messageBar.style.display = 'none';
-        }, 1000); // Hide after 2 seconds
+            console.log("style set to none");
+        }, 1000); // Wait for 1 second before hiding 
     }
 }
+
 // Call the function to show the message bar
-
 window.onload = showMessageBar;
-
-
-

@@ -18,8 +18,14 @@
     <div class="container mt-5">
         <div class = "employeestablecontainer">
         <div class = "employeestablebox">
-        <h1>Employees</h1>
-        {% if level <= 1 %} <a href="{% url 'employee_create' %}" class="btn btn-primary mb-3">Create New Employee</a> {% endif %}
+            <div class="title-box">Employees</div>
+        {% if level <= 1 %} 
+            <div class="divforbutton">
+                <button class="mybutton" onclick="gotoemployeecreate()" id="add_button" data-empadd-url="{% url 'employee_create' %}">
+                    <img class="add_img_icon" src="{% static 'images/plus_icon.png' %}">
+                </button>
+            </div>
+        {% endif %}
         <table class="table">
             <thead>
                 <tr>
@@ -40,8 +46,10 @@
 
                     <td>
                         {% if level <= 1 %}
+
                         <a href="{% url 'employee_update' employee.employee_id %}" class="btn btn-warning btn-sm">Update</a>
                         <a href="{% url 'employee_disable' employee.employee_id %}" class="btn btn-warning btn-sm">Disable</a>
+                        
                         {% endif %}
                     </td>
                 </tr>

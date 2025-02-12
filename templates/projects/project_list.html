@@ -10,16 +10,23 @@
     {% include 'main_linkings.html' %}
 
     <link rel="stylesheet" href="{% static 'css/projects_view.css' %}">
+    <script src="{% static 'js/project_form_validation.js' %}"></script>
 
 </head>
 <body>
+    {% include 'header.html' %}
     <div class="container mt-5">
         <div class="projectlistcontainer">
         <div class="projectlistbox">
-        <h1>Project List</h1>
+        <div class="title-box">Project List</div>
 
+        
         {% if level <= 1 %}
-            <a href="{% url 'project_create' %}" class="btn btn-primary mb-3">Create New Project</a>
+            <div class="divforbutton">
+                <button class="mybutton" onclick="gotocreateproject()" id="add_button" data-projadd-url="{% url 'project_create' %}">
+                    <img class="add_img_icon" src="{% static 'images/plus_icon.png' %}">
+                </button>
+            </div>
         {% endif %}
 
         <table class="table table-bordered">
@@ -47,12 +54,8 @@
                         <td>{{ project.created_at }}</td>
                         <td>
                             {% if level <= 1 %}
-                                <a href="{% url 'project_update' project.project_id %}" class="btn btn-warning btn-sm">Update</a>
-                                <a href="{% url 'project_delete' project.project_id %}" class="btn btn-warning btn-sm">Delete</a>
-                                <form action="{% url 'project_delete' project.project_id %}" method="post" style="display:inline;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this project?');">Delete</button>
-                                </form>
+                                <a href="{% url 'project_update' project.project_id %}" class="btn">Update</a>
+                                <a href="{% url 'project_delete' project.project_id %}" class="btn">Delete</a>
                             {% endif %}
                         </td>
                     </tr>

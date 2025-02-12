@@ -282,16 +282,16 @@ def project_create(request):
             return redirect('project_list')
     else:
         form = ProjectForm()
-    return render(request, 'projects/project_form.html', {'form': form, 'operations': operations1, 'level':int(level)})
+    return render(request, 'projects/project_form.html', {'form': form, 'action': 'Create', 'operations': operations1, 'level':int(level)})
 
 def project_update(request, pk):
-    validate_user = role_required(request=request,permission_name="admin")
+    validate_user = role_required(request=request, permission_name="admin")
     if isinstance(validate_user, JsonResponse):
         return validate_user
     user = get_current_user(request)
     level = user.role
     operations1 = operations[level]
-    project = get_object_or_404(Project, pk=pk)
+    project = get_object_or_404(Project, project_id=pk)
     if request.method == 'POST':
         form = ProjectForm(request.POST, instance=project)
         if form.is_valid():
@@ -299,7 +299,7 @@ def project_update(request, pk):
             return redirect('project_list')
     else:
         form = ProjectForm(instance=project)
-    return render(request, 'projects/project_form.html', {'form ': form, 'operations': operations1, 'level':int(level)})
+    return render(request, 'projects/project_form.html', {'form': form, 'action': 'Update', 'operations': operations1, 'level': int(level)})
 
 def project_delete(request, pk):
     validate_user = role_required(request=request,permission_name ="admin")
@@ -333,12 +333,49 @@ def employees_under_manager(request):
     level = user.role
     operations1 = operations[level]
     manager = user
-
-    # Get all employees reporting to this manager
     employees = Employee.objects.filter(reporting_manager=manager)
-
-    # Render the template with the manager and their employees
     return render(request, 'employees_under_manager.html', {
         'manager': manager,
         'employees': employees, 'operations': operations1, 'level':int(level)
     })
+
+
+def project_assignation_create(request):
+    validate_user = role_required(request=request,permission_name="manager")
+    if isinstance(validate_user, JsonResponse):
+        return validate_user
+    user = get_current_user(request)
+    level = user.role
+    operations1 = operations[level]
+    manager = user
+    if request.method == 'POST':
+        form = ProjectAssignationForm(request.POST, logged_in_user=request.user)
+        if form.is_valid():
+            assignation = form.save(commit=False)  
+            assignation.assigning_manager = manager 
+            assignation.save() 
+            return redirect('project_assignation_list')  
+    else:
+        form = ProjectAssignationForm(logged_in_user=manager)
+    return render(request, 'assignations/project_assignation_form.html', {'form': form, 'action':'Create', 'operations': operations1, 'level':int(level)})
+
+
+def project_assignation_update(request, pk):
+    validate_user = role_required(request=request,permission_name="manager")
+    if isinstance(validate_user, JsonResponse):
+        return validate_user
+    user = get_current_user(request)
+    level = user.role
+    operations1 = operations[level]
+    manager = user
+    assignation = get_object_or_404(ProjectAssignation, assign_id=pk)
+    if request.method == 'POST':
+        form = ProjectAssignationForm(request.POST, instance=assignation, logged_in_user=manager)
+        if form.is_valid():
+            assignation = form.save(commit=False)
+            assignation.assigning_manager = manager
+            assignation.save()
+            return redirect('project_assignation_list')
+    else:
+        form = ProjectAssignationForm(instance=assignation, logged_in_user=manager)
+    return render(request, 'assignations/project_assignation_form.html', {'form': form, 'action': 'Update','operations': operations1, 'level':int(level)})

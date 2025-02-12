@@ -19,7 +19,7 @@
             <h2>Update Status for {{ employee.first_name }} {{ employee.last_name }}</h2>
             <form method="post">
                 {% csrf_token %}
-                {{ form.as_p }}  
+                {{ form.as_p }}
                 <button type="submit">Update Status</button>
             </form>
             <a href="{% url 'employee_list' %}">Cancel</a>

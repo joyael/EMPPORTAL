@@ -10,7 +10,7 @@
     {% include 'main_linkings.html' %}
 
     <link rel="stylesheet" href="{% static 'css/departments_view.css' %}">
-    
+    <script src="{% static 'js/departments_view.js' %}"> </script>
 
 </head>
 <body>
@@ -19,14 +19,22 @@
         <div class="departmentstablecontainer">
             <div class="departmentstablebox">
         
-        <h1>Departments</h1>
-        {% if level <= 1 %} <a href="{% url 'department_create' %}" class="btn btn-primary mb-3">Create New Department</a> {% endif %}
+        <div class="title-box">Departments</div>
+        {% if level <= 1 %} 
+            <div class="divforbutton">
+                <button class="mybutton" onclick="gotocreatedepartment()" id="add_button" data-depadd-url="{% url 'department_create' %}">
+                    <img class="add_img_icon" src="{% static 'images/plus_icon.png' %}">
+                </button>
+            </div>
+        {% endif %}
         <table class="table">
             <thead>
                 <tr>
                     <th>Department Name</th>
                     <th>Description</th>
-                    {% if level <= 1 %}<th>Actions</th>{% endif %}
+                    {% if level <= 1 %}
+                        <th>Actions</th>
+                    {% endif %}
                 </tr>
             </thead>
             <tbody>
@@ -37,7 +45,6 @@
                     <td>
                         {% if level <= 1 %}
                         <a href="{% url 'department_update' department.department_id %}" class="btn btn-warning btn-sm">Update</a>
-                        
                         <a href="{% url 'department_delete' department.department_id %}" class="btn btn-warning btn-sm">Delete</a>
                         {% endif %}
                     </td>

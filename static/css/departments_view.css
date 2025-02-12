@@ -22,11 +22,12 @@
     width: 100%; /* Make the table take the full width of its container */
     border-collapse: collapse; /* Collapse borders for a cleaner look */
     margin-top: 20px; /* Add some margin above the table */
+    font-size: 12px;
 }
 
 .departmentstablebox .table th, 
 .departmentstablebox .table td {
-    border: 1px solid #ddd; /* Add a light gray border to table cells */
+    border: 1px solid black; /* Add a light gray border to table cells */
     padding: 10px; /* Add padding for better spacing */
     text-align: left; /* Align text to the left */
 }
@@ -49,24 +50,58 @@
     padding: 5px 10px; /* Add padding to buttons */
     border: none; /* Remove default button border */
     border-radius: 4px; /* Rounded corners for buttons */
-    cursor: pointer; /* Change cursor to pointer on hover */
+    cursor: pointer; 
 }
 
 .departmentstablebox .btn-primary {
-    background-color: #444444; /* Bootstrap primary color */
-    color: white; /* White text color */
+    background-color: #444444; 
+    color: white; 
 }
 
 .departmentstablebox .btn-warning {
-    background-color: #444444; /* Bootstrap warning color */
-    color: white; /* White text color */
+    background-color: #444444;
+    color: white; 
 }
 
 .departmentstablebox .btn-danger {
-    background-color: #444444; /* Bootstrap danger color */
-    color: white; /* White text color */
+    background-color: #444444; 
+    color: white; 
 }
 
 .departmentstablebox .btn:hover {
     opacity: 0.8; /* Slightly reduce opacity on hover */
+}
+
+
+.departmentstablebox .title-box {
+    text-align: center;
+    color: black;
+    margin-bottom: 20px;
+    font-family: sans-serif;
+    font-size: 16px;
+    font-weight: bold;
+    padding-bottom: 5px;
+}
+
+.divforbutton{
+    display: flex;
+    justify-content: right;
+}
+
+.mybutton{
+    margin-left: 10px;
+    border-radius: 3px;
+    border: none;
+    background-color: #333;
+    padding: 5px;
+    font-size: 14px;
+    color: white;
+    cursor: pointer;
+}
+
+.add_img_icon{
+    height:10px;
+    width:10px;
+    margin:0px;
+    padding:0px;
 }

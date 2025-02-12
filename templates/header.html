@@ -1,17 +1,10 @@
 {% load static %}
-<script src="{% static 'js/message_bar.js' %}"></script>
 <script src="{% static 'js/logout.js' %}"></script>
 <script src="{% static 'js/logo.js' %}"></script>
 <script src="{% static 'js/side_bar.js' %}"></script>
     <header id="header">
-    
-        <div class="message-bar" id="message-bar" style="display: none;">
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="message">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        </div>
+
+        {% include 'message_bar.html' %}
 
         <div class="headermainbox rowflexbox">
             <div class="logobox">
