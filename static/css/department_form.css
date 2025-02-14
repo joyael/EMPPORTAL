@@ -1,0 +1,87 @@
+.departmentformcontainer {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px; 
+    border-radius: 8px;
+    font-family: sans-serif;
+}
+
+.departmentformbox .title-box {
+    text-align: left; 
+    color: black; 
+    margin-bottom: 20px;
+    font-family: sans-serif;
+    font-size: 18px;
+    font-weight: bold;
+    padding-bottom: 5px;
+    border-bottom: 1px solid gray;
+}
+
+.departmentformbox .form-group {
+    margin-bottom: 15px;
+}
+
+.departmentformbox label {
+    display: block;
+    margin-bottom: 5px;
+    color: #444;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.departmentformbox .input-div {
+    border: 1px solid white;
+    padding : 0px;
+    margin : 0px;
+}
+
+.departmentformbox input[type="text"],
+.departmentformbox textarea {
+    
+    width: fit-content; 
+    padding: 10px; 
+    border: 1px solid #bbb; 
+    border-radius: 4px; 
+    box-sizing: border-box; 
+    transition: border-color 0.3s; 
+}
+
+.departmentformbox input[type="text"]:focus,
+.departmentformbox textarea:focus {
+    border-color: #333; 
+    outline: none; 
+}
+.departmentformbox input[type="text"]:focus,
+.departmentformbox textarea:focus .input-div{
+    border-color: #333;
+}
+
+
+ .departmentformbox .errorbar{
+    display: none;
+    color: red;
+ }
+
+ .departmentformbox .errorbarvisible{
+    display: block;
+    color: red;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-size: 15px;
+ }
+
+.buttons-div{
+    display: flex;
+    flex-direction: row;
+    justify-content: right;
+}
+.mybutton{
+    margin-left: 10px;
+    border-radius: 3px;
+    border: none;
+    background-color: #333;
+    padding: 5px;
+    font-size: 14px;
+    color: white;
+    cursor: pointer;
+}

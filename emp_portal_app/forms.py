@@ -221,6 +221,7 @@ class ProjectAssignationForm(forms.ModelForm):
             'status',
             'start_date',
             'end_date',
+            'assigning_manager',
         ]
         widgets = {
             'project': forms.Select(attrs={'class': 'form-control'}),
@@ -232,11 +233,13 @@ class ProjectAssignationForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        # Extract the logged-in user from kwargs
         self.logged_in_user = kwargs.pop('logged_in_user', None)
         super(ProjectAssignationForm, self).__init__(*args, **kwargs)
-
-        if self.logged_in_user:
+            
+        if self.logged_in_user.level() <= 1:
+            self.fields['assigning_manager'].queryset = Employee.objects.all()
+        else:
+            self.fields.pop('assigning_manager')
             self.fields['project'].queryset = Project.objects.filter(manager=self.logged_in_user)
 
     def clean(self):

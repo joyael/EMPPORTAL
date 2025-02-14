@@ -28,5 +28,11 @@ urlpatterns = [
     path('projects/delete/<int:pk>/', project_delete, name='project_delete'),
     path('projects/<int:pk>/', project_individual_view, name='project_detail'),
 
-    path('manager/employees', employees_under_manager, name='employees_under_manager')
+    path('manager/employees', employees_under_manager, name='employees_under_manager'),
+
+    path('project_assignations/', project_assignation_list, name='project_assignation_list'),
+    path('project_assignations/create/', project_assignation_create, name='project_assignation_create'),
+    path('project_assignations/update/<int:pk>/', project_assignation_update, name='project_assignation_update'),
+    #path('project_assignations/delete/<int:pk>/', project_delete, name='project_delete'),
+    #path('projects/<int:pk>/', project_individual_view, name='project_detail'),
 ]

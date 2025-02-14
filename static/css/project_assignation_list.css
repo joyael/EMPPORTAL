@@ -1,0 +1,116 @@
+/* General styles for the project list container */
+.projectassignationslistcontainer {
+    padding: 20px;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+}
+
+.projectassignationslistbox {
+    background-color: white;
+    padding: 20px;
+    margin: 20px auto;
+}
+
+.projectassignationslistbox .btn {
+    margin-right: 10px;
+}
+
+.projectassignationslistbox .table {
+    font-size: 12px;
+    width: 100%; 
+    border-collapse: collapse;
+}
+
+.projectassignationslistbox .table th,
+.projectassignationslistbox .table td {
+    padding: 12px; 
+    text-align: left;
+    border: 1px solid black;
+}
+
+.projectassignationslistbox .table th {
+    background-color: #f8f9fa;
+    color: black;
+    font-weight: bold;
+}
+.projectassignationslistbox .table th {
+    background-color: #ccc;
+    color: black;
+}
+
+.projectassignationslistbox .table tr:hover {
+    background-color: #f1f1f1;
+}
+
+.projectassignationslistbox .table a.btn {
+    text-decoration: none; 
+    display: inline-block;
+    background-color: #555; 
+    color: white;
+    padding: 5px 10px; 
+    border-radius: 4px;
+    font-size: 14px;
+    transition: background-color 0.3s; 
+}
+
+.projectassignationslistbox .table a.btn:hover {
+    background-color: gray; 
+}
+
+.projectassignationslistbox .title-box {
+    text-align: center;
+    color: black;
+    margin-bottom: 20px;
+    font-family: sans-serif;
+    font-size: 16px;
+    font-weight: bold;
+    padding-bottom: 5px;
+}
+
+.projectassignationslistbox tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.projectassignationslistbox tr:hover {
+    background-color: #f1f1f1;
+}
+
+.divforbutton{
+    display: flex;
+    justify-content: right;
+    margin-bottom: 20px;
+}
+
+.mybutton{
+    margin-left: 10px;
+    border-radius: 3px;
+    border: none;
+    background-color: #333;
+    padding: 5px;
+    font-size: 14px;
+    color: white;
+    cursor: pointer;
+}
+
+.add_img_icon{
+    height:10px;
+    width:10px;
+    margin:0px;
+    padding:0px;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .projectlistbox table {
+        font-size: 14px;
+    }
+
+    .projectlistbox .btn {
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+}
+
+
+

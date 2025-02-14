@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static %}
+    {% include 'main_linkings.html' %}
+    <title>Project Assignation List</title>
+    <link rel="stylesheet" href="{% static 'css/project_assignation_list.css' %}">
+    <script src="{% static 'js/project_assignation_list.js' %}"></script>
+</head>
+<body>
+    {% include 'header.html' %}
+
+    {% if level <= 2 %}
+        <div class="divforbutton">
+            <button class="mybutton" onclick="gotocreateprojectassignation()" id="add_button" data-projassignadd-url="{% url 'project_assignation_create' %}">
+                <img class="add_img_icon" src="{% static 'images/plus_icon.png' %}">
+            </button>
+        </div>
+    {% endif %}
+
+    <div class="container mt-5">
+        <div class="projectassignationslistcontainer">
+        <div class="projectassignationslistbox">
+        <div class="title-box">Project Assignation List</div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Project</th>
+                    <th>Employee</th>
+                    <th>Assigning Manager</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for assignation in assignations %}
+                <tr>
+                    <td>{{ assignation.project.project_name }}</td>
+                    <td>{{ assignation.employee.first_name }} {{ assignation.employee.last_name }}</td>
+                    <td>{{ assignation.assigning_manager.first_name }} {{ assignation.assigning_manager.last_name }}</td>
+                    <td>{{ assignation.role }}</td>
+                    <td>{{ assignation.get_status_display }}</td>
+                    <td>{{ assignation.start_date }}</td>
+                    <td>{{ assignation.end_date }}</td>
+                    <td>
+                        {% if level <= 1 %}
+                            <a href="{% url 'project_assignation_update' assignation.assign_id %}" class="btn">Update</a>
+                            <a href="#" class="btn">Delete</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center"> No project assignations found. </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        </div>
+        </div>
+    </div>
+
+    {% include 'footer.html' %}
+</body>
+</html>

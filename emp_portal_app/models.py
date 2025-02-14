@@ -99,6 +99,9 @@ class Employee(models.Model):
             self.password_hash = make_password(self.password_hash)
         super().save(*args, **kwargs)
 
+    def level(self):
+        return int(self.role)
+
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 

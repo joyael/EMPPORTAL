@@ -37,14 +37,11 @@ operations = {
         },
         "Projects": {
             "CreateProject": "project_create",
-            "Update Project": "",
-            "Delete Project": "",
             "View Projects": "project_list"
         },
         "Project Assignations": {
-            "Create Project Assignation": "",
-            "Update Project Assignation any": "",
-            "View Project Assignations any": ""
+            "Create Project Assignation": "project_assignation_create",
+            "View Project Assignations any": "project_assignation_list",
         }
     },
     "2": {
@@ -59,8 +56,7 @@ operations = {
             "View Projects": ""
         },
         "Project Assignations": {
-            "Create Project Assignation": "",
-            "Update My Project Assignation": "",
+            "Create Project Assignation": "project_assignation_create",
             "View My Project Assignations": ""
         }
     },

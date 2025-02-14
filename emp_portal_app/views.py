@@ -345,19 +345,27 @@ def project_assignation_create(request):
     if isinstance(validate_user, JsonResponse):
         return validate_user
     user = get_current_user(request)
-    level = user.role
-    operations1 = operations[level]
+    level = user.level()
+    operations1 = operations[str(level)]
     manager = user
     if request.method == 'POST':
         form = ProjectAssignationForm(request.POST, logged_in_user=request.user)
         if form.is_valid():
-            assignation = form.save(commit=False)  
-            assignation.assigning_manager = manager 
-            assignation.save() 
-            return redirect('project_assignation_list')  
+            assignation = form.save(commit=False)
+            if(level<=1):
+                assignation.assigning_manager = request.POST.get('assigning_manager')
+            else:
+                assignation.assigning_manager = manager
+            assignation.save()
+            return redirect('project_assignation_list')
     else:
         form = ProjectAssignationForm(logged_in_user=manager)
-    return render(request, 'assignations/project_assignation_form.html', {'form': form, 'action':'Create', 'operations': operations1, 'level':int(level)})
+    return render(request, 'assignations/project_assignation_form.html', {
+        'form': form,
+        'action':'Create',
+        'operations': operations1,
+        'level':level
+    })
 
 
 def project_assignation_update(request, pk):
@@ -370,7 +378,7 @@ def project_assignation_update(request, pk):
     manager = user
     assignation = get_object_or_404(ProjectAssignation, assign_id=pk)
     if request.method == 'POST':
-        form = ProjectAssignationForm(request.POST, instance=assignation, logged_in_user=manager)
+        form = ProjectAssignationForm(request.POST, instance = assignation, logged_in_user = manager)
         if form.is_valid():
             assignation = form.save(commit=False)
             assignation.assigning_manager = manager
@@ -379,3 +387,14 @@ def project_assignation_update(request, pk):
     else:
         form = ProjectAssignationForm(instance=assignation, logged_in_user=manager)
     return render(request, 'assignations/project_assignation_form.html', {'form': form, 'action': 'Update','operations': operations1, 'level':int(level)})
+
+
+def project_assignation_list(request):
+    validate_user = role_required(request=request,permission_name="manager")
+    if isinstance(validate_user, JsonResponse):
+        return validate_user
+    user = get_current_user(request)
+    level = user.level()
+    operations1 = operations[str(level)]
+    assignations = ProjectAssignation.objects.all()
+    return render(request, 'assignations/project_assignation_list.html', {'assignations': assignations,'operations': operations1, 'level':int(level)})

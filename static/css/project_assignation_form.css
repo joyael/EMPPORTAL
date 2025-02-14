@@ -1,4 +1,4 @@
-.departmentformcontainer {
+.projectassignationformcontainer {
     max-width: 600px;
     margin: 0 auto;
     padding: 20px; 
@@ -6,7 +6,7 @@
     font-family: sans-serif;
 }
 
-.departmentformbox .title-box {
+.projectassignationformbox .title-box {
     text-align: left; 
     color: black; 
     margin-bottom: 20px;
@@ -17,11 +17,11 @@
     border-bottom: 1px solid gray;
 }
 
-.departmentformbox .form-group {
+.projectassignationformbox .form-group {
     margin-bottom: 15px;
 }
 
-.departmentformbox label {
+.projectassignationformbox label {
     display: block;
     margin-bottom: 5px;
     color: #444;
@@ -29,14 +29,14 @@
     font-weight: bold;
 }
 
-.departmentformbox .input-div {
+.projectassignationformbox .input-div {
     border: 1px solid white;
     padding : 0px;
     margin : 0px;
 }
 
-.departmentformbox input[type="text"],
-.departmentformbox textarea {
+.projectassignationformbox input[type="text"],
+.projectassignationformbox textarea {
     
     width: fit-content; 
     padding: 10px; 
@@ -46,34 +46,23 @@
     transition: border-color 0.3s; 
 }
 
-.departmentformbox input[type="text"]:focus,
-.departmentformbox textarea:focus {
+.projectassignationformbox input[type="text"]:focus,
+.projectassignationformbox textarea:focus {
     border-color: #333; 
     outline: none; 
 }
-.departmentformbox input[type="text"]:focus,
-.departmentformbox textarea:focus .input-div{
+.projectassignationformbox input[type="text"]:focus,
+.projectassignationformbox textarea:focus .input-div{
     border-color: #333;
 }
 
-.departmentformbox button.btn {
-    width: 100%; 
-    padding: 10px; 
-    background-color: #007bff; 
-    color: white; 
-    border: none; 
-    border-radius: 4px; 
-    cursor: pointer; 
-    transition: background-color 0.3s;
-}
 
-
- .departmentformbox .errorbar{
+ .projectassignationformbox .errorbar{
     display: none;
     color: red;
  }
 
- .departmentformbox .errorbarvisible{
+ .projectassignationformbox .errorbarvisible{
     display: block;
     color: red;
     margin-top: 10px;
@@ -95,4 +84,10 @@
     font-size: 14px;
     color: white;
     cursor: pointer;
+}
+.add_img_icon{
+    height:10px;
+    width:10px;
+    margin:0px;
+    padding:0px;
 }

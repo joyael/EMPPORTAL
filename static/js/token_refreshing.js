@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log("User was not active. Token will not be refreshed.");
         }
         isUserActive = false; // Reset activity flag for the next period
-        addUserActivityEventListeners();
+        //addUserActivityEventListeners();
         resetTimer(); // Start the next timer
     };
 
