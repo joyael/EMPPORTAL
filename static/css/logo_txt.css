@@ -1,0 +1,24 @@
+.text-center {
+	text-align: center;
+}
+.w-full {
+	width: 100%;
+}
+.mt-4 {
+	margin-top: 0rem;
+    display: flex;
+    justify-content: center;
+}
+.gradient-text {
+	background: linear-gradient(to right, #E86A27, #72BE44, #266D9C);
+	-webkit-text-fill-color: transparent;
+	-webkit-background-clip: text;
+	font-size: 11px;
+	font-weight: bold;
+	text-transform: uppercase;
+    text-align: justify;
+}
+
+.px-1 {
+	padding-left: 0rem;
+}

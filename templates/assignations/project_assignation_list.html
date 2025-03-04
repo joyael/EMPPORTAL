@@ -8,22 +8,40 @@
     <title>Project Assignation List</title>
     <link rel="stylesheet" href="{% static 'css/project_assignation_list.css' %}">
     <script src="{% static 'js/project_assignation_list.js' %}"></script>
+
+    <link rel="stylesheet" href="{% static 'css/filter_bar.css' %}">
+    <script src="{% static 'js/filter_bar.js' %}"></script>
 </head>
 <body>
     {% include 'header.html' %}
 
-    {% if level <= 2 %}
-        <div class="divforbutton">
-            <button class="mybutton" onclick="gotocreateprojectassignation()" id="add_button" data-projassignadd-url="{% url 'project_assignation_create' %}">
-                <img class="add_img_icon" src="{% static 'images/plus_icon.png' %}">
-            </button>
-        </div>
-    {% endif %}
 
     <div class="container mt-5">
         <div class="projectassignationslistcontainer">
         <div class="projectassignationslistbox">
-        <div class="title-box">Project Assignation List</div>
+
+        <div class="title-box">
+            {% if level <= 1 %}
+                Project Assignation List
+            {% endif %}
+            {% if level == 2 %}
+                My Project Assignations
+            {% endif %}
+            {% if level == 3 %}
+                Projects Assigned to me
+            {% endif %}
+        </div>
+
+        {% if level <= 2 %}
+            <div class="divforbutton">
+                <button class="mybutton" onclick="gotocreateprojectassignation()" id="add_button" data-projassignadd-url="{% url 'project_assignation_create' %}">
+                    <img class="add_img_icon" src="{% static 'images/plus_icon.png' %}">
+                </button>
+            </div>
+        {% endif %}
+
+        {% include 'assignations/filter_bar.html' %}
+
         <table class="table">
             <thead>
                 <tr>
@@ -34,9 +52,10 @@
                     <th>Status</th>
                     <th>Start Date</th>
                     <th>End Date</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="assignations_table_body">
                 {% for assignation in assignations %}
                 <tr>
                     <td>{{ assignation.project.project_name }}</td>
@@ -55,7 +74,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="7" class="text-center"> No project assignations found. </td>
+                    <td colspan="8" class="text-center"> No project assignations found. </td>
                 </tr>
                 {% endfor %}
             </tbody>

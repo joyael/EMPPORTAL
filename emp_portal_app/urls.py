@@ -19,6 +19,7 @@ urlpatterns = [
     path('employees/disable/<int:pk>/', employee_disable, name='employee_disable'),
 
     path('login/', login, name='login'),
+    path('logout/', LogoutView.as_view(), name='logout'),
     path('home/',home,name='home'),
     path('refresh/',refresh_token_view,name='refresh'),
 
@@ -35,4 +36,11 @@ urlpatterns = [
     path('project_assignations/update/<int:pk>/', project_assignation_update, name='project_assignation_update'),
     #path('project_assignations/delete/<int:pk>/', project_delete, name='project_delete'),
     #path('projects/<int:pk>/', project_individual_view, name='project_detail'),
+    
+    path('profile_picture', profile_picture, name='profile_picture'),
+    path('profile_view', profile_view, name='profile_view'),
+
+    path('timesheet/create/', submit_time_entry, name='submit_time_entry'),
+    path('timesheet/timesheet_overview', timesheet_overview, name='timesheet_overview'),
+    
 ]

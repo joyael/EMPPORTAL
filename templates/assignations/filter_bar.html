@@ -1,0 +1,129 @@
+{% load static %}
+
+<div class="filter_div">
+    <div class="filter_one_div">
+        <div class="filter_label_div">
+            Projects
+        </div>
+        <div class="filter_select_div" >
+            <button id="projects_select_button" name="projects_select_button" class="filter_select_button">
+                <span>Select Project</span>
+                <img class="arrow_icon">
+            </button>
+            <div class="dropdown_column_inactive" id="projects_dropdown">
+                <input type="text" id="projects_select_input" class="filter_input">
+                <div data-option-value = "nil" class="filter_options">Select Project</div>
+                {% for project in projects %}
+                    <div data-option-value = "{{ project.project_id }}" class="filter_options">{{ project.project_name }}</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="filter_one_div">
+        <div class="filter_label_div">
+            Employee
+        </div>
+        <div class="filter_select_div" >
+            <button id="employees_select_button" name="projects_select_button" class="filter_select_button">
+                <span>Select Employee</span>
+                <img class="arrow_icon">
+            </button>
+            <div class="dropdown_column_inactive" id="employees_dropdown">
+                <input type="text" id="employees_select_input" class="filter_input">
+                <div data-option-value = "nil" class="filter_options">Select Employee</div>
+                {% for employee in employees %}
+                    <div data-option-value="{{ employee.employee_id }}" class="filter_options">{{ employee.name }}</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="filter_one_div">
+        <div class="filter_label_div">
+            Assigning Manager
+        </div>
+        <div class="filter_select_div" >
+            <button id="managers_select_button" name="managers_select_button" class="filter_select_button">
+                <span>Select Assigning Manager</span>
+                <img class="arrow_icon">
+            </button>
+            <div class="dropdown_column_inactive" id="managers_dropdown">
+                <input type="text" id="managers_select_input" class="filter_input">
+                <div data-option-value = "nil" class="filter_options">Select Assigning Manager</div>
+                {% for assigning_manager in assigning_managers %}
+                    <div data-option-value="{{ assigning_manager.employee_id }}" class="filter_options">{{ assigning_manager.name }}</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="filter_one_div">
+        <div class="filter_label_div">
+            Role
+        </div>
+        <div class="filter_select_div" >
+            <button id="roles_select_button" name="managers_select_button" class="filter_select_button">
+                <span>Select Role</span>
+                <img class="arrow_icon">
+            </button>
+            <div class="dropdown_column_inactive" id="roles_dropdown">
+                <input type="text" id="roles_select_input" class="filter_input">
+                <div data-option-value = "nil" class="filter_options">Select Role</div>
+                {% for role in roles %}
+                    <div data-option-value="{{role}}" class="filter_options">{{role}}</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="filter_one_div">
+        <div class="filter_label_div">
+            Status
+        </div>
+        <div class="filter_select_div" >
+            <button id="statuses_select_button" name="managers_select_button" class="filter_select_button">
+                <span>Select Status</span>
+                <img class="arrow_icon">
+            </button>
+            <div class="dropdown_column_inactive" id="statuses_dropdown">
+                <input type="text" id="statuses_select_input" class="filter_input">
+                <div data-option-value = "nil" class="filter_options">Select Status</div>
+                {% for status in statuses %}
+                <div data-option-value="{{ status.num }}" class="filter_options">{{ status.name }}</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="filter_one_div">
+        <div class="filter_label_div">
+            Date
+        </div>
+        <div>
+            <input type="date" id="dateforfilter" name="dateforfilter">
+        </div>
+    </div>
+
+    <form id="myFormForFilter" style="display: none;" method="post">
+        {% csrf_token %}
+        <input type="text" name="role_for_form" id="role_for_form" value="nil" hidden>
+        <input type="text" name="status" id="status" value="nil" hidden>
+        <input type="text" name="assigning_manager_id" id="assigning_manager_id" value="nil" hidden>
+        <input type="text" name="employee_id" id="employee_id" value="nil" hidden>
+        <input type="text" name="project_id" id="project_id" value="nil" hidden>
+        <input type="date" name="dateInput" id="dateInput" value="" hidden>
+    </form>
+
+    <div class="filter_search_button_div filter_one_div">
+        <div class="filter_label_div">
+            &nbsp;
+        </div>
+        <div class="filter_search_button_inside_div">
+            <button class="filter_search_button" id="filter_search_button" data-filterSubmit-url="{% url 'project_assignation_list' %}">
+                <img src="{% static 'images/search_icon.png' %}" alt="Search Icon" class="filter_search_icon" >
+            </button>
+        </div>
+    </div>
+
+</div>

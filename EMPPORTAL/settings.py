@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from django.urls import reverse
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -35,8 +37,47 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'emp_portal_app'
+    'emp_portal_app',
+
+    #for gmail login
+    'django.contrib.sites',  # Required for allauth
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',  # Google provider
+
 ]
+
+# Set the SITE_ID
+SITE_ID = 1
+
+# Add authentication backends
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',  #Default
+    'allauth.account.auth_backends.AuthenticationBackend',  #Allauth
+)
+
+# Optional: Configure allauth settings
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = "optional"  # or "mandatory"
+LOGIN_REDIRECT_URL = '/empportal/login'
+LOGOUT_REDIRECT_URL = '/empportal/login'
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': '63806129956-3p4ni7cq4i17qe7nmocbn7pumckapvn7.apps.googleusercontent.com',
+            'secret': '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',
+            'key': '',
+        }
+    }
+}
+
+
+
+#for session engine
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -46,6 +87,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
+
+    # Add your custom middleware here
+    'emp_portal_app.middleware.SessionTrackingMiddleware',
 ]
 
 ROOT_URLCONF = 'EMPPORTAL.urls'

@@ -42,12 +42,14 @@
                 <tr>
                     <td>{{ department.department_name }}</td>
                     <td>{{ department.description }}</td>
+                    {% if level <= 1 %}
                     <td>
-                        {% if level <= 1 %}
+                        
                         <a href="{% url 'department_update' department.department_id %}" class="btn btn-warning btn-sm">Update</a>
                         <a href="{% url 'department_delete' department.department_id %}" class="btn btn-warning btn-sm">Delete</a>
-                        {% endif %}
+                        
                     </td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>

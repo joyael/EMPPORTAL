@@ -1,0 +1,112 @@
+.filter_div{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    margin-bottom: 10px;
+}
+
+.filter_one_div{
+    margin-left: 20px;
+    max-width: 300px;
+}
+
+.filter_label_div{
+    text-align: center;
+    font-size: 14px;
+    font-weight: bold;
+    padding-bottom: 0px;
+}
+
+.filter_select_div{
+    padding: 0;
+    margin: 0;
+    position: relative;
+}
+
+.filter_select_button{
+    border: 1px solid gray;
+    border-radius: 8px;
+    text-decoration: none;
+    margin: 0px;
+    width: 100%;
+    padding: 5px;
+}
+.filter_select_button_down {
+    border: 1px solid gray;
+    border-radius: 8px;
+    text-decoration: none;
+    margin: 0px;
+    width: 100%;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+.dropdown_column_active{
+    display:block;
+}
+.dropdown_column_inactive{
+    display:none;
+}
+.dropdown_column_active{
+    position:absolute;
+    padding:5px;
+    margin:0px;
+    border: 1px solid gray;
+    width: 100%;
+    box-sizing: border-box;
+    z-index: 999;
+    background-color: white;
+}
+
+.filter_input{
+    width:100%;
+    border: 1px solid gray;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    box-sizing: border-box;
+}
+
+.filter_input:focus {
+    border-color: blue;
+}
+
+
+.filter_options {
+    width:100%;
+    color: black;
+    text-align: center;
+    border-top: 1px solid gray;
+    border-left: 1px solid gray;
+    border-right: 1px solid gray;
+    border-bottom: 1px solid gray;
+    margin-top: 3px;
+    margin-bottom: 5px;
+    margin: 0px;
+    padding:3px;
+    box-sizing: border-box;
+    font-size: 12px;
+}
+
+.filter_options:hover {
+    background-color: blue;
+    color:white;
+}
+
+
+.filter_search_button_div{
+    margin-left: 20px;
+}
+
+.filter_search_button_inside_div{
+    padding: 0px;
+}
+
+.filter_search_icon{
+    height: 20px;
+    width: 20px;
+}
+
+#dateforfilter{
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}

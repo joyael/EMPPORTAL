@@ -9,6 +9,7 @@
     {% include 'main_linkings.html' %}
     
     <link rel="stylesheet" href="{% static 'css/employees_list.css' %}">
+    <script src="{% static 'js/employee_list.js' %}"></script>
 </head>
 <body>
     {% include 'header.html' %}
@@ -18,7 +19,7 @@
         <div class = "employeestablecontainer">
         <div class = "employeestablebox">
             <div class="title-box">Employees</div>
-        {% if level <= 1 %} 
+        {% if level <= 1 %}
             <div class="divforbutton">
                 <button class="mybutton" onclick="gotoemployeecreate()" id="add_button" data-empadd-url="{% url 'employee_create' %}">
                     <img class="add_img_icon" src="{% static 'images/plus_icon.png' %}">

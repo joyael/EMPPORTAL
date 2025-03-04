@@ -41,3 +41,10 @@ def is_refresh_token_active(refresh_token):
         return token_instance.is_active
     else:
         return False
+    
+
+def convert_to_decimal_hours(hours, minutes, seconds):
+    decimal_minutes = minutes / 60
+    decimal_seconds = seconds / 3600
+    total_hours = hours + decimal_minutes + decimal_seconds
+    return round(total_hours, 2)

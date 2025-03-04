@@ -3,35 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {% load static %}
-    <title>{{ action }} Project</title>
+    <title>{{ action }} Time Entry</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.2/css/bootstrap.min.css">
+    {% load static %}
 
     {% include 'main_linkings.html' %}
-    
-    <link rel="stylesheet" href="{% static 'css/department_form.css' %}">
-    <script src="{% static 'js/project_form_validation.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'css/employee_form.css' %}">
+    <link rel="stylesheet" href="{% static 'css/submit_time_entry.css' %}">
+    <script src="{% static 'js/submit_time_entry.js' %}"></script>
 </head>
 <body>
     {% include 'header.html' %}
     <div class="container mt-5">
-        <div class="departmentformcontainer">
-        <div class="departmentformbox">
-        <div class="title-box">{{ action }} Project</div>
-        <div class="errorbar" id="errorbox"></div>
-        <form method="post" id="projectForm">
+        <div class="employeeformcontainer">
+        <div class="employeeformbox">
+            <div class="title-box">{{ action }} Time Entry </div>
+
+        <div id="errorbox"></div>
+        <form method="post" id="employeeForm">
             {% csrf_token %}
             {{ form.as_p }}
+
             <div class="buttons-div">
                 <button type="submit" class="mybutton">{{ action }}</button>
-                <button type="button" class="mybutton" onclick="gotoprojectlist()" data-projectlist-url="{% url 'project_list' %}" id="cancel_button">Cancel</button>
+                <button type="button" class="mybutton" onclick="gotohome()" data-home-url="{% url 'home' %}" id="cancel_button">Cancel</button>
                 {% if action != 'update' %}
                     <button type="submit" class="mybutton" name="add_new" value="true">Save and Add New</button>
                 {% endif %}
             </div>
+
         </form>
         </div>
-    </div>
+        </div>
     </div>
     {% include 'footer.html' %}
 </body>

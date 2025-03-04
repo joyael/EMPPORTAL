@@ -9,7 +9,10 @@
         <div class="headermainbox rowflexbox">
             <div class="logobox">
                 <div class="logoimagebox">
-                    <img src="{% static 'images/yat_logo.png' %}" alt="Description of Image" class="logoimg">
+                    <img src="{% static 'images/yatnam_full_logo.png' %}" alt="Description of Image" class="logoimg">
+                </div>
+                <div class="w-full text-center mt-4">        
+                    <p class="px-1 gradient-text">Employee Portal</p>
                 </div>
             </div>
             <div class="headerrightbox">
@@ -17,17 +20,17 @@
                     <div class="navbarbox">
                         <nav>
                             <ul class="menu">
-                                <li><a href="{% url 'home' %}">Home</a></li>
+                                <li><a href="{% url 'home' %}" class="{% if active_title == 'Home' %}active_title{% endif %}">Home</a></li>
                                 {% for operation_title, operation_items in operations.items %}
                                     <li>
-                                        <a href="#">{{ operation_title }}</a>
+                                        <a href="#" class="{% if operation_title == active_title %}active_title{% else %}not_active_title{% endif %}">{{ operation_title }}</a>
                                         {% if operation_items %}
                                             <ul class="submenu">
                                                 {% for item_title, item_url in operation_items.items %}
                                                     {% if item_url %}
                                                         <li><a href="{% url item_url %}">{{ item_title }}</a></li>
                                                     {% else %}
-                                                        <li><a href="#">{{ item_title }}</a></li>  <!-- Handle cases where item_url is empty -->
+                                                        <li><a href="#">{{ item_title }}</a></li>  <!-- Handle cases where item_url is empty --> 
                                                     {% endif %}
                                                 {% endfor %}
                                             </ul>
@@ -48,7 +51,7 @@
                             Monday
                         </div>
                         <div class="time">
-                            00:00:00
+                            00:00:00 AM
                         </div>
                     </div>
                 </div>
@@ -91,8 +94,18 @@
 
                 <div class="belowrowbox rowflexbox">
                     <div class="current_page_path rowflexbox">
-                        <div>Home</div>
-                        <div>Directives</div> 
+                        <div class="directive_home_icon_div">
+                            <img src="{% static 'images/home_icon.png' %}" class="home_icon_img">
+                        </div>
+                        <div class="page_path_div">Home</div>
+
+                        {% for page_path in page_paths %}
+                            <div class="page_path_div">
+                                <img src="{% static 'images/right_arrow_icon.png' %}">
+                                <p> {{page_path}} </p>
+                            </div>
+                        {% endfor %}
+
                     </div>
                     <div class="account_features rowflexbox" id="id_account_features_desktop">
                         <div class="checkintime">
@@ -109,7 +122,7 @@
                             <img src="{% static 'images/bell_icon.png' %}">
                         </div>
                         <div class="accountbox">
-                            <button id="id_accountbox" onclick="toggleProfileOption()">
+                            <button id="id_accountbox" onclick="toggleProfileOption()" data-profile_picture-url="{% url 'profile_picture' %}">
                                 <img src="{% static 'images/human_photo.jpg' %}" class="account_photo">
                                 <img src="{% static 'images/down_arrow.png' %}" class="down_arrow">
                             </button>
@@ -117,18 +130,17 @@
 
                         <div class="profile_logout_option">
                             <div class="profile_case">
-                                <button class="profile-button">
+                                <button class="profile-button" onclick = "window.location.href='{% url 'profile_view' %}'">
                                     <div><a class="name">Joyael Jose (User)</a><br></div>
                                     <div><a class="profile_link">Profile</a></div>
                                 </button>
                             </div>
                             <div class="logout_case">
-                                <button class="logout-button">
+                                <button class="logout-button" id="id_logout_button" onclick="logout()" data-logout-url="{% url 'logout' %}" data-login-url="{% url 'login' %}">
                                     <div class="logout-div"><a class="logout_link">Log out</a></div>
                                 </button>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -186,7 +198,7 @@
                         </button>
                     </div>
                     <div class="logout_case">
-                        <button class="logout-button">
+                        <button class="logout-button" id="id_logout_button" onclick="logout()" data-logout-url="{% url 'logout' %}">
                             <div class="logout-div"><a class="logout_link">Log out</a></div>
                         </button>
                     </div>
@@ -194,3 +206,5 @@
             </div>
         </div>
     <button id="refreshButton" data-refresh-url="{% url 'refresh' %}" hidden>Refresh</button>
+    <button class="logout-button" id="id_logout_button_o" onclick="logout()" data-logout-url="{% url 'logout' %}" data-login-url="{% url 'login' %}" hidden>lo
+    </button>

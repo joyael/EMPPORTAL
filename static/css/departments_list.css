@@ -38,7 +38,7 @@
 }
 
 .departmentstablebox .table tr:nth-child(even) {
-    background-color: #f9f9f9; /* Alternate row color for better readability */
+    background-color: white; /* Alternate row color for better readability */
 }
 
 .departmentstablebox .table tr:hover {

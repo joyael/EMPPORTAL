@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ action }} Time Entry</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.2/css/bootstrap.min.css">
+    {% load static %}
+
+    {% include 'main_linkings.html' %}
+    <link rel="stylesheet" href="{% static 'css/timesheet_overview.css' %}">
+    <script src="{% static 'js/timesheet_overview.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'css/filter_bar_timesheet_overview.css' %}">
+    <script src="{% static 'js/filter_bar.js' %}"></script>
+</head>
+<body>
+    {% include 'header.html' %}
+    <div class="container mt-5">
+        <div class="timesheet_container">
+            <div>
+                <h2 class="timesheet_overview_h2">Timesheet Overview</h2>
+                <table id="tbl-dashboard" class="tbl-dashboard">
+                    <thead>
+                        <tr>
+                            <th class="boxes_th">
+                                <p>Project Hours</p>
+                                <p class="boxes_value" id="project_hours">0.00</p>
+                                <p></p>
+                            </th>
+                            <th class="boxes_th">
+                                <p>Bench Hour</p>
+                                <p class="boxes_value" id="bench_hours">0.00</p>
+                            </th>
+                            <th class="boxes_th">
+                                <p>Training Hours</p>
+                                <p class="boxes_value" id="training_hours">0.00</p>
+                            </th>
+                            <th class="boxes_th">
+                                <p>Learning Hours</p>
+                                <p class="boxes_value" id="learning_hours">0.00</p>
+                            </th>
+                            <th class="boxes_th">
+                                <p>Leave Days</p>
+                                <p class="boxes_value" id="leave_days">0.00</p>
+                            </th>
+                            <th class="boxes_th">
+                                <p>Total Hours</p>
+                                <p class="boxes_value" id="total_hours">0.00</p>
+                            </th>
+                            <th id="col_deviation" class="boxes_th has-deviation-bg">
+                                <p>Deviation Hours</p>
+                                <p class="boxes_value" id="deviation_hours">-8.00</p>
+                            </th>
+                        </tr>
+                    </thead>
+                </table>
+                <div class="filter_row_outer_div">
+                    {% include 'timesheet/filter_bar.html' %}
+                    <div style="text-align: end;">
+                            <p style="font-size: .9rem">Min Working Hrs : <span style="font-weight: bold" id="workingDayCount" name="workingDayCount">112.00</span></p>
+                    </div>
+                </div>
+
+                <table id="overview_table_report" name="overview_table_report" class="overview_table_report">
+                    <thead class="overview_table_head">
+                        <tr>                            
+                            <th>employee</th>
+                            <th>reporting manager</th>
+                            <th>project hours</th>
+                            <th>bench hours</th>
+                            <th>leave days</th>
+                            <th>training hours</th>
+                            <th>learning hours</th>
+                            <th>total hours</th>
+                            <th>deviation</th>
+                        </tr>
+                    </thead>
+                    <tbody class="overview_table_data" id="overview_table_data">
+                        {% for employee in employees %}
+                        <tr class="overview_table_tr">
+                            <td class="overview_table_td">
+                                <b>{{ employee }}</b>
+                            </td>
+                            <td class="overview_table_td">
+                                {{ reporting_manager }}
+                            </td>
+                            <td class="overview_table_td text-right">
+                                {{ project_hours }}
+                            </td>
+                            <td class="overview_table_td text-right">
+                                {{ bench_hours }}
+                            </td>
+                            <td class="overview_table_td text-right">
+                                {{ leave_days }}
+                            </td>
+                            <td class="overview_table_td text-right">
+                                {{ training_hours }}
+                            </td>
+                            <td class="overview_table_td text-right">
+                                {{ learning_hours }}
+                            </td>
+                            <td class="overview_table_td text-right">
+                                {{ total_hours }}
+                            </td>
+                            <td class="overview_table_td text-right  has-deviation">
+                                {{ deviation }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="overview_table_footer" id="overview_table_footer">
+                        <tr class="overview_table_footer_tr">
+                            <th class="overview_table_footer_th">
+
+                            </th>
+                            <th class="overview_table_footer_th">
+                                Total
+                            </th>
+                            <th class="overview_table_footer_th text-right">
+                                0.00
+                            </th>
+                            <th class="overview_table_footer_th text-right">
+                                0.00
+                            </th>
+                            <th class="overview_table_footer_th text-right">
+                                0.00
+                            </th>
+                            <th class="overview_table_footer_th text-right">
+                                96.00
+                            </th>
+                            <th class="overview_table_footer_th text-right">
+                                0.00
+                            </th>
+                            <th class="overview_table_footer_th text-right">
+                                96.00
+                            </th>
+                            <th class="overview_table_footer_th text-right  has-deviation">
+                                -8.00
+                            </th>
+                        </tr>
+                    </tfoot>
+                </table>
+
+
+            </div>
+        </div>
+    </div>
+    {% include 'footer.html' %}
+</body> 
+</html>

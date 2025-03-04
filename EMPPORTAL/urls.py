@@ -20,4 +20,8 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('empportal/', include('emp_portal_app.urls')),
+    path('accounts/', include('allauth.urls')),  # Allauth endpoints
+    
 ]
+
+    

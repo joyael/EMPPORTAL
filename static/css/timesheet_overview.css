@@ -1,0 +1,141 @@
+.timesheet_container{
+    padding: 10px 20px;
+}
+
+.timesheet_overview_h2{
+    color: rgb(55 65 81);
+    line-height: 1.25;
+	font-weight: 600;
+    font-size: 1rem;
+    text-align: left;
+    width:100%;
+    display: inline-block;
+    padding-bottom: 10px;
+    margin:0px;
+    border-bottom:1px solid rgb(229 231 235);
+    
+}
+
+.tbl-dashboard{
+	border-collapse: collapse;
+	width: 100%; 
+    font-size: .875rem;
+    line-height: 1.25rem;
+    text-indent: 0;
+    border-color: inherit;
+    border-collapse: collapse;
+
+}
+
+.boxes_th {
+    padding: 20px;
+    border: 15px solid #fff;
+    text-align: center;
+    background-color: rgb(229, 231, 235);
+}
+
+.boxes_value{
+    font-size: 18px;
+    margin-top: .75rem;
+    margin: 0;
+}
+
+.boxes_th p{
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.has-deviation-bg{
+    background-color: #ffcccb;
+}
+
+.overview_table_report{
+    min-width: 100%;
+	text-indent: 0;
+	border-color: inherit;
+	border-collapse: collapse;
+}
+
+.overview_table_head{
+    border: 1px solid black;
+    letter-spacing: .05em; /* tracking-wider */
+    line-height: 1rem; /* leading-4 */
+    text-transform: capitalize; /* capitalize */
+    font-weight: 400; /* font-normal */
+    font-size: .75rem; /* text-xs */
+    line-height: 1rem; /* text-xs line-height */
+    text-align: center; /* text-center */
+    background-color: rgb(243, 244, 246); /* bg-gray-100 */
+
+}
+.overview_table_head tr{
+    border-top: solid 1px;
+    border-bottom: solid 1px;
+}
+.overview_table_head th{
+    padding: 7px 1px;
+    border-left: solid 1px;
+}
+
+.overview_table_data{
+    font-size: .75rem;
+    line-height: 1rem;
+}
+
+
+.overview_table_tr {
+    border-top: solid 1px rgb(229, 231, 235); 
+    border-bottom: solid 1px;
+}
+
+.overview_table_tr:hover {
+    border-top: solid 1px black; /* Change to a solid color */
+    border-bottom: solid 1px black; /* Change to a solid color */
+    background-color: rgba(243, 244, 246, 1); /* Use rgba for opacity */
+}
+
+.overview_table_td{
+    border-left: solid 1px;
+    padding-top: .5rem;
+    padding-bottom: .5rem;
+    padding-left: .75rem;
+    padding-right: .75rem;
+}
+
+.text-right {
+	text-align: right;
+}
+.overview_table_footer{
+    font-size: .75rem;
+    line-height: 1rem;
+}
+
+.overview_table_footer_tr{
+    border-top: solid 1px; /* Applies to tfoot tr */
+    border-bottom: solid 1px black; /* Applies to tfoot tr */
+    letter-spacing: .05em; /* tracking-wider */
+    line-height: 1rem; /* leading-4 */
+    text-transform: capitalize; /* capitalize */
+    font-weight: 400; /* font-normal */
+    background-color: rgb(249, 250, 251); /* bg-gray-50 */
+    border-top-width: 1px; /* border-t */
+    border-bottom-width: 1px; /* border-b */
+}
+
+.overview_table_footer_th {
+    padding-right: .75rem; /* Applies to tfoot th */
+    padding: 7px 1px; /* Applies to th */
+    padding-right: 1px; /* Overrides padding-right for th */
+    border-left: solid 1px; /* Applies to th and td */
+    padding-top: .5rem; /* Applies to py-2 */
+    padding-bottom: .5rem; /* Applies to py-2 */
+    padding-left: .75rem; /* Applies to px-3 */
+    padding-right: .75rem; /* Applies to px-3 */
+}
+
+
+.has-deviation{
+    border-left: 1px solid red;
+    border-right: 1px solid red;
+    color:red;
+}

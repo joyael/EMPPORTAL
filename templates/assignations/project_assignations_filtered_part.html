@@ -1,0 +1,22 @@
+{% load static %}
+{% for assignation in assignations %}
+    <tr>
+        <td>{{ assignation.project.project_name }}</td>
+        <td>{{ assignation.employee.first_name }} {{ assignation.employee.last_name }}</td>
+        <td>{{ assignation.assigning_manager.first_name }} {{ assignation.assigning_manager.last_name }}</td>
+        <td>{{ assignation.role }}</td>
+        <td>{{ assignation.get_status_display }}</td>
+        <td>{{ assignation.start_date }}</td>
+        <td>{{ assignation.end_date }}</td>
+        <td>
+            {% if level <= 1 %}
+                <a href="{% url 'project_assignation_update' assignation.assign_id %}" class="btn">Update</a>
+                <a href="#" class="btn">Delete</a>
+            {% endif %}
+        </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="8" class="text-center"> No project assignations found. </td>
+    </tr>
+{% endfor %}

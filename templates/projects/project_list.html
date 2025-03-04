@@ -8,7 +8,7 @@
 
     {% include 'main_linkings.html' %}
 
-    <link rel="stylesheet" href="{% static 'css/project__list.css' %}">
+    <link rel="stylesheet" href="{% static 'css/project_list.css' %}">
     <script src="{% static 'js/project_form_validation.js' %}"></script>
 
 </head>
@@ -49,7 +49,18 @@
                         <td>{{ project.manager }}</td>
                         <td>{{ project.get_status_display }}</td>
                         <td>{{ project.comment }}</td>
-                        <td>{{ project.description }}</td>
+                        <td class="desc_td">
+                            {% if project.description|length > 30 %}
+                                <span class="description-preview" data-full-description="{{ project.description }}">
+                                    {{ project.description|slice:":30" }}..
+                                </span>
+                                <div class="full-desc">
+                                    {{project.description}}
+                                </div>
+                            {% else %}
+                                {{ project.description }}
+                            {% endif %}
+                        </td>
                         <td>{{ project.created_at }}</td>
                         <td>
                             {% if level <= 1 %}

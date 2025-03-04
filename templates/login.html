@@ -5,19 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/header.css' %}">
-    <link rel="stylesheet" href="{% static 'css/footer.css' %}"> 
+    {% load socialaccount %}
+ 
     <link rel="stylesheet" href="{% static 'css/loginform.css' %}"> 
     <script src="{% static 'js/employee_login_validation.js' %}"></script>
+    <script src="{% static 'js/message_bar.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'css/message_bar.css' %}">
 </head>
 <body>
-
-    {% include 'header.html' %}
+    {% include 'message_bar.html' %}
 
     <div class="loginformcontainer">
         <div class="loginformbox">
-            <h2>Login</h2>
-            <div id="errorbox"></div>
+
+            <div  class="logo_for_login">
+                <img src="{% static 'images/yatnam_full_logo.png' %}">
+            </div>
+
+            <div class="w-full text-center mt-4">        
+                <p class="px-1 gradient-text">Employee Portal</p>
+            </div>
+
+            <h2 class="login-heading">Login</h2>
+            <div id="errorbox"> </div>
+
             <form method="POST" action="{% url 'login' %}" id="loginForm">
                 {% csrf_token %}
                 <div class="form-group">
@@ -28,19 +39,23 @@
                     <label for="password_hash">Password:</label>
                     <input type="password" name="password_hash" id="password_hash" required>
                 </div>
-                <button type="submit">Login</button>
+                <button type="submit" class="login-button">Login</button>
             </form>
-            {% if messages %}
-                <ul>
-                    {% for message in messages %}
-                        <li>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
+
+            <!-- <a href="{% provider_login_url 'google' %}" class="btn btn-primary">Login with Google</a> -->
+            
+            
+            <form method="post" action="http://127.0.0.1:8000/accounts/google/login/">
+                {% csrf_token %}
+                <button type="submit" class="login_with_google_button_class">Login with Google</button>
+            </form>
+
+
         </div>
     </div>
 
-    {% include 'footer.html' %}
-
 </body>
 </html>
+
+
+

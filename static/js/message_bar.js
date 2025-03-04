@@ -9,15 +9,18 @@ function applyMessageBarStyles(element) {
         headerElement = document.getElementById('header');
         const heightInPixels = getElementHeightInPixels(headerElement);
         element.style.height = heightInPixels === null ? '0' : String(heightInPixels);
-        element.style.top = '0';
-        element.style.left = '0';
-        element.style.right = '0';
+        element.style.top = '0px';
+        element.style.left = '0px';
+        element.style.right = '0px';
         element.style.zIndex = '1000';
         element.style.fontSize = '16px';
         element.style.width = '100%';
         element.style.display = 'flex';
+        element.style.flexDirection = 'column';
         element.style.justifyContent = 'center';
         element.style.alignItems = 'center';
+        element.style.marginTop = '0px';
+        element.style.paddingTop = '0px';
     }
 }
 
@@ -36,6 +39,7 @@ function showMessageBar() {
     if (messageBar.innerHTML.trim() !== '') {
         applyMessageBarStyles(messageBar);
         messageBar.style.display = 'flex'; // Ensure the message bar is visible
+        messageBar.style.flexDirection = 'column';
 
         setTimeout(() => { //  setTimeout function
             messageBar.style.display = 'none';

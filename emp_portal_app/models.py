@@ -47,7 +47,7 @@ class Employee(models.Model):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50) 
     DOB = models.DateField() 
-    email = models.EmailField(unique=True) 
+    email = models.EmailField(unique=True)
     phone = models.CharField(max_length=15, blank=True, null=True) 
     join_date = models.DateField() 
     reporting_manager = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='subordinates')
@@ -101,7 +101,8 @@ class Employee(models.Model):
 
     def level(self):
         return int(self.role)
-
+    def name(self):
+        return f"{self.first_name} {self.last_name}"
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
@@ -162,3 +163,23 @@ class ProjectAssignation(models.Model):
 
     def __str__(self):
         return f"{self.project.project_name} - {self.employee.first_name} {self.employee.last_name} ({self.role})"
+    
+
+class Timesheet(models.Model):
+    date = models.DateField()  
+    hours = models.IntegerField() 
+    minutes = models.IntegerField()  
+    seconds = models.IntegerField() 
+    task_id = models.CharField(max_length=255, null=True, blank=True) 
+    description = models.TextField(blank=True)  
+    project = models.CharField(max_length=255)  
+    project_real = models.ForeignKey(Project, null=True, blank=True, on_delete=models.SET_NULL)
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'Timesheet for {self.date} - {self.hours}h {self.minutes}m {self.seconds}s'
+
+    class Meta:
+        verbose_name = 'Timesheet'
+        verbose_name_plural = 'Timesheets'
+

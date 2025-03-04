@@ -1,79 +1,69 @@
-// Function to get the height of the first element with the specified class name
+
 function getHeightByClass(className) {
     const elements = document.getElementsByClassName(className);
-    
     if (elements.length > 0) {
-        // Get the full rendered dimensions including CSS transforms
         const rect = elements[0].getBoundingClientRect();
-        return Math.round(rect.height); // Returns precise height including transforms
+        return Math.round(rect.height);
     } else {
         console.error(`No elements found with class name: ${className}`);
         return null;
     }
 }
 
-// Function to get the width of the first element with the specified class name
 function getWidthByClass(className) {
-    // Get the elements by class name
     const elements = document.getElementsByClassName(className);
-    
-    // Check if any elements were found
     if (elements.length > 0) {
-        // Return the width of the first element in pixels
-        return elements[0].offsetWidth; // Returns width in pixels
+        return elements[0].offsetWidth;
     } else {
         console.error(`No elements found with class name: ${className}`);
-        return null; // Return null if no elements found
+        return null;
     }
 }
 
-// Function to get the height of a specific element passed as an argument
 function getHeightOfElement(element) {
     if (element) {
-        return element.offsetHeight; // Returns height in pixels
+        return element.offsetHeight;
     } else {
         console.error("Invalid element provided.");
-        return null; // Return null if the element is invalid
+        return null;
     }
 }
 
-// Function to get the width of a specific element passed as an argument
 function getWidthOfElement(element) {
     if (element) {
-        return element.offsetWidth; // Returns width in pixels
+        return element.offsetWidth;
     } else {
         console.error("Invalid element provided.");
-        return null; // Return null if the element is invalid
+        return null;
     }
 }
 
-// Example usage
-document.addEventListener("DOMContentLoaded", () => {
-    // Get height of the first element with class 'headerrightbox'
-    let height = getHeightByClass('headerrightbox');
-    console.log(`Height of the first element with class 'headerrightbox': ${height}px`);
-    height = String(parseInt(height)+5);
 
-    // Get width of the first element with class 'logobox'
+document.addEventListener("DOMContentLoaded", () => {
+    let height = getHeightByClass('navbarrowbox');
+    let heightT = getHeightByClass('headerrightbox');
+    console.log(`Height of the first element with class 'navbarrowbox': ${height}px`);
+    height = String(parseInt(height));
+    console.log(`Height of the first element with class 'headerrightbox': ${heightT}px`);
+    heightT = String(parseInt(heightT));
+
     const width = getWidthByClass('logobox');
     console.log(`Width of the first element with class 'logobox': ${width}px`);
 
     const logoimageboxElements = document.getElementsByClassName('logoimagebox');
     if (logoimageboxElements.length > 0) {
-        logoimageboxElements[0].style.height = height + 'px';// Set height with 'px' unit
+        logoimageboxElements[0].style.height = height + 'px';
     }
-
-    // Set the height of the first element with class 'logobox'
-    const logoboxElements = document.getElementsByClassName('logobox');
-    if (logoboxElements.length > 0) {
-        logoboxElements[0].style.height = height + 'px';// Set height with 'px' unit
-    }
-    
-
-    // Set the height of the first element with class 'logoimg'
     const logoimgElements = document.getElementsByClassName('logoimg');
     if (logoimgElements.length > 0) {
-        logoimgElements[0].style.height = height + 'px'; // Set height with 'px' unit
-        // logoimgElements[0].style.width = width + 'px'; 
+        logoimgElements[0].style.height = height + 'px';
     }
+
+
+    const logoboxElements = document.getElementsByClassName('logobox');
+    if (logoboxElements.length > 0) {
+        logoboxElements[0].style.height = heightT + 'px';
+    }
+    
+    
 });

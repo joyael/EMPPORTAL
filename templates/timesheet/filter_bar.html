@@ -1,0 +1,84 @@
+{% load static %}
+
+<div class="filter_div">
+
+    <div class="filter_one_div">
+        <div class="filter_label_div">
+            From Date
+        </div>
+        <div>
+            <input type="date" id="fromdateforfilter" name="fromdateforfilter">
+        </div>
+    </div>
+
+    <div class="filter_one_div">
+        <div class="filter_label_div">
+            To Date
+        </div>
+        <div>
+            <input type="date" id="todateforfilter" name="todateforfilter">
+        </div>
+    </div>
+
+    <div class="filter_one_div">
+        <div class="filter_label_div">
+            Project
+        </div>
+        <div class="filter_select_div" >
+            <button id="projects_select_button" name="projects_select_button" class="filter_select_button">
+                <span>Select Project</span>
+                <img class="arrow_icon">
+            </button>
+            <div class="dropdown_column_inactive" id="projects_dropdown">
+                <input type="text" id="projects_select_input" class="filter_input">
+                <div data-option-value = "nil" class="filter_options">Select Project</div>
+                {% for project in projects %}
+                    <div data-option-value = "{{ project.project_id }}" class="filter_options">{{ project.project_name }}</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="filter_one_div">
+        <div class="filter_label_div">
+            Employee
+        </div>
+        <div class="filter_select_div" >
+            <button id="employees_select_button" name="projects_select_button" class="filter_select_button">
+                <span>Select Employee</span>
+                <img class="arrow_icon">
+            </button>
+            <div class="dropdown_column_inactive" id="employees_dropdown">
+                <input type="text" id="employees_select_input" class="filter_input">
+                <div data-option-value = "nil" class="filter_options">Select Employee</div>
+                {% for employee in employees %}
+                    <div data-option-value="{{ employee.employee_id }}" class="filter_options">{{ employee.name }}</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    
+
+    
+
+    <form id="myFormForFilter" style="display: none;" method="post">
+        {% csrf_token %}
+        <input type="text" name="employee_id" id="employee_id" value="nil" hidden>
+        <input type="text" name="project_id" id="project_id" value="nil" hidden>
+        <input type="date" name="fromdateInput" id="fromdateInput" value="" hidden>
+        <input type="date" name="todateInput" id="todateInput" value="" hidden>
+    </form>
+
+    <div class="filter_search_button_div filter_one_div">
+        <div class="filter_label_div">
+            &nbsp;
+        </div>
+        <div class="filter_search_button_inside_div">
+            <button class="filter_search_button" id="filter_search_button" data-filterSubmit-url="{% url 'project_assignation_list' %}">
+                <img src="{% static 'images/search_icon.png' %}" alt="Search Icon" class="filter_search_icon" >
+            </button>
+        </div>
+    </div>
+
+</div>

@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
     
-    const tokenExpiryTime = 10 * 60 * 1000; 
+    const tokenExpiryTime = 4 * 60 * 1000; 
     let timer;
     let isUserActive = false; 
     let test_iterating_variable=0;
@@ -83,7 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
 const userActivityHandler = () => {
     test_iterating_variable += 1;
     isUserActive = true;
-    console.log(`User  activity detected ${test_iterating_variable} times`);
+    //console.log(`User  activity detected ${test_iterating_variable} times`);
 };
 
     

@@ -57,7 +57,7 @@ operations = {
         },
         "Project Assignations": {
             "Create Project Assignation": "project_assignation_create",
-            "View My Project Assignations": ""
+            "View My Project Assignations": "project_assignation_list"
         }
     },
     "3": {
@@ -66,10 +66,13 @@ operations = {
         },
         "Employees": {
             "View Employees": "employee_list",
-            "View Project Assignations to me": ""
         },
-        "Projects": {
-            "View Projects": "project_list"
+        "Project Assignations": {
+            "View Project Assignations to me": "project_assignation_list"
+        },
+        "Timesheet": {
+            "Submit Time Entry": "submit_time_entry",
+            "Timesheet Overview": "timesheet_overview"
         }
     }
 }

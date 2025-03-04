@@ -68,9 +68,9 @@
     padding-bottom: 5px;
 }
 
-.projectassignationslistbox tr:nth-child(even) {
+/* .projectassignationslistbox tr:nth-child(even) {
     background-color: #f9f9f9;
-}
+} */
 
 .projectassignationslistbox tr:hover {
     background-color: #f1f1f1;

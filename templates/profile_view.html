@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    {% load static %}
+
+    {% include 'main_linkings.html' %}
+
+    <link rel="stylesheet" href="{% static 'css/profile_view.css' %}">
+</head>
+<body>
+
+    {% include 'header.html' %}
+
+    <div class="profile_outside_div">
+        <div class="profile_heading_div">
+            Profile
+        </div>
+
+        <div class="profile_main_div">
+            <div class="profile_text">
+                <div class="left">
+                    <p class="strong">Profile Information</p>
+                    <p class="normal">Profile information details</p>
+                </div>
+            </div>
+
+    
+            <div class="profile_main_div_inner">
+                <div class="edit_profile_div">
+                    <button class="edit_profile_button">
+                        Edit Profile
+                    </button>
+                </div>
+
+                <table class="profile_table">
+                    <tbody>
+                        <tr>
+                            <td colspan="3">
+                                <img class="user_profile_picture_img" 
+                                id="user_profile_picture_img"
+                                src="" 
+                                onerror="this.onerror=null; this.src='{% static 'images/user_icon.png' %}';" 
+                                alt="{{ user.first_name }} {{ user.last_name }}"
+                                data-profile_picture-url="{% url 'profile_picture' %}">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="table_value_label">Employee Id</td>
+                            <td class="table_semicolon">:</td>
+                            <td class="table_value">{{user.employee_id}}</td>
+                        </tr>
+                        <tr>
+                            <td class="table_value_label">Name</td>
+                            <td class="table_semicolon">:</td>
+                            <td class="table_value">{{ user.first_name }} {{ user.last_name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="table_value_label">Date of Birth</td>
+                            <td class="table_semicolon">:</td>
+                            <td class="table_value">{{ user.DOB }}</td>
+                        </tr>
+                        <tr>
+                            <td class="table_value_label">Email</td>
+                            <td class="table_semicolon">:</td>
+                            <td class="table_value">{{ user.email }}</td>
+                        </tr>
+                        <tr>
+                            <td class="table_value_label">Phone</td>
+                            <td class="table_semicolon">:</td>
+                            <td class="table_value">{{ user.phone }}</td>
+                        </tr>
+                        <tr>
+                            <td class="table_value_label">Join Date</td>
+                            <td class="table_semicolon">:</td>
+                            <td class="table_value">{{ user.join_date }}</td>
+                        </tr>
+                        <tr>
+                            <td class="table_value_label">Reporting Manager</td>
+                            <td class="table_semicolon">:</td>
+                            <td class="table_value">{{ user.reporting_manager }}</td>
+                        </tr>
+                        <tr>
+                            <td class="table_value_label">Role</td>
+                            <td class="table_semicolon">:</td>
+                            <td class="table_value">{{ user.get_role_display }}</td>
+                        </tr>
+                        <tr>
+                            <td class="table_value_label">Department</td>
+                            <td class="table_semicolon">:</td>
+                            <td class="table_value">{{ user.department }}</td>
+                        </tr>
+                        <tr>
+                            <td class="table_value_label">Position</td>
+                            <td class="table_semicolon">:</td>
+                            <td class="table_value">{{ user.get_position_display }}</td>
+                        </tr>
+                        <tr>
+                            <td class="table_value_label">Status</td>
+                            <td class="table_semicolon">:</td>
+                            <td class="table_value">{{ user.get_status_display }}</td>
+                        </tr>
+                        <tr>
+                            <td class="table_value_label">Created At</td>
+                            <td class="table_semicolon">:</td>
+                            {% load tz %}  <!-- Load the timezone template tag library -->
+                                <td class="table_value">
+                                    {% with user.created_at|localtime as local_time %}
+                                        {{ local_time|date:"Y-m-d H:i:s" }}  <!-- Format the date as needed -->
+                                    {% endwith %}
+                                </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="profile_main_div">
+            <div class="profile_text">
+                <div class="left">
+                    <p class="strong">Update Password</p>
+                    <p class="normal">Ensure your account is using a long, random password to stay secure.</p>
+                </div>
+            </div>
+
+    
+            <form class="profile_main_div_inner pad-0">
+                <div class="password_update_box">
+                    <div class="bellingham">
+                        <label class="vini">Current Password</label>
+                        <input class="mbappe">
+                    </div>
+                    <div class="bellingham">
+                        <label class="vini">New Password</label>
+                        <input class="mbappe">
+                    </div>
+                    <div class="bellingham">
+                        <label class="vini">Confirm Password</label>
+                        <input class="mbappe">
+                    </div>
+                </div>
+                <div class="password_save_div">
+                    <button type="submit" class="password_save_button">Save</button>
+                </div>
+            </form>
+        </div>
+
+
+        <div class="profile_main_div">
+            <div class="profile_text">
+                <div class="left">
+                    <p class="strong">Browser Sessions</p>
+                    <p class="normal">Manage and log out your active sessions on other browsers and devices.</p>
+                </div>
+            </div>
+    
+            <div class="profile_main_div_inner">
+                <div class="warning_for_devices">
+                    If necessary, you may log out of all of your other browser sessions across all of your devices. Some of your recent sessions are listed below; however, this list may not be exhaustive. If you feel your account has been compromised, you should also update your password.
+                </div>
+                <div class="session-container">
+
+                    {% for session in user_sessions %}
+                    <div class="session-item">
+                        <div class="icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25"></path>
+                            </svg>
+                        </div>
+                        <div class="session-details">
+                            <div class="device">{{ session.device }} - {{ session.browser }}</div>
+                            <div class="ip">{{ session.ip }}, <span class="current-device">
+                                {% if session.session_key == request.session.session_key %}This device{% endif %}
+                            </span></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    <div class="flexy-fun-zone">
+                        <button type="submit" class="logout-button-of-doom" wire:click="confirmLogout" wire:loading.attr="disabled">
+                            Log Out Other Browser Sessions
+                        </button>
+                    
+                        <div class="success-message-sorcery" x-data="{ shown: false, timeout: null }" 
+                             x-init="window.livewire.find('ZPu29GMvBWrPASG77WZj').on('loggedOut', () => { clearTimeout(timeout); shown = true; timeout = setTimeout(() => { shown = false }, 2000); })" 
+                             x-show.transition.out.opacity.duration.1500ms="shown" 
+                             x-transition:leave.opacity.duration.1500ms="" style="display: none;">
+                            Done.
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            
+        </div>
+    </div>
+
+
+
+
+
+    
+
+    {% include 'footer.html' %}
+
+</body>
+</html>

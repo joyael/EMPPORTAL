@@ -2,6 +2,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password
 from django.http import JsonResponse
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+from django.views import View
+from django.utils import timezone
 import jwt
 
 from EMPPORTAL import settings
@@ -10,6 +14,18 @@ from .operations_by_role import operations
 
 from .forms import *
 from .utils import create_access_token,check_refresh_token,create_refresh_token,insert_refresh_token, is_refresh_token_active, make_refresh_token_inactive
+
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
+
+from django.contrib.sessions.models import Session
+import json
+
+
+from allauth.socialaccount.models import SocialAccount
+
+from datetime import datetime, timedelta
+
 
 # Create your views here.
 
@@ -41,6 +57,23 @@ def refresh_token_view(request):
         return JsonResponse({'error': 'Refresh token has expired'}, status=401)
     except jwt.InvalidTokenError:
         return JsonResponse({'error': 'Invalid refresh token'}, status=401)
+
+
+
+class LogoutView(View):
+    def post(self, request):
+        # Get the refresh token from cookies
+        refresh_token = request.COOKIES.get('refresh_token')
+        if refresh_token:
+            make_refresh_token_inactive(refresh_token)  # Invalidate the refresh token
+
+        # Clear the cookies
+        response = JsonResponse({'message': 'Logged out successfully.'})
+        response.delete_cookie('access_token')
+        response.delete_cookie('refresh_token')
+        logout(request)
+
+        return response
 
 
 def permission_list(request):
@@ -89,7 +122,7 @@ def department_list(request):
     level = user.role
     operations1 = operations[level]
     departments = Department.objects.all()
-    return render(request, 'department_list.html', {'departments': departments, 'operations': operations1, 'level':int(level)})
+    return render(request, 'department_list.html', {'departments': departments, 'operations': operations1, 'level':int(level),'active_title':'Departments'})
 
 
 def department_create(request):
@@ -111,7 +144,7 @@ def department_create(request):
                 return redirect('department_list')
     else:
         form = DepartmentForm()
-    return render(request, 'department_form.html', {'form': form, 'action': 'Create', 'operations': operations1, 'level':int(level)})
+    return render(request, 'department_form.html', {'form': form, 'action': 'Create', 'operations': operations1, 'level':int(level),'active_title':'Departments'})
 
 
 def department_update(request, pk):
@@ -129,7 +162,7 @@ def department_update(request, pk):
             return redirect('department_list')
     else:
         form = DepartmentForm(instance=department)
-    return render(request, 'department_form.html', {'form': form, 'action': 'Update', 'operations': operations1, 'level':int(level)})
+    return render(request, 'department_form.html', {'form': form, 'action': 'Update', 'operations': operations1, 'level':int(level),'active_title':'Departments'})
 
 
 def department_delete(request, pk):
@@ -143,7 +176,7 @@ def department_delete(request, pk):
     if request.method == 'POST':
         department.delete()
         return redirect('department_list')
-    return render(request, 'department_confirm_delete.html', {'department': department, 'operations': operations1, 'level':int(level)})
+    return render(request, 'department_confirm_delete.html', {'department': department, 'operations': operations1, 'level':int(level),'active_title':'Departments'})
 
 
 
@@ -155,7 +188,7 @@ def employee_list(request):
     level = user.role
     operations1 = operations[level]
     employees = Employee.objects.all()
-    return render(request, 'employee_list.html', {'employees': employees, 'operations': operations1, 'level':int(level)})
+    return render(request, 'employee_list.html', {'employees': employees, 'operations': operations1, 'level':int(level),'active_title':'Employees'})
 
 
 def employee_create(request):
@@ -173,7 +206,7 @@ def employee_create(request):
             return redirect('employee_list') 
     else:
         form = EmployeeForm()
-    return render(request, 'employee_form.html', {'form': form, 'action': 'Create', 'operations': operations1, 'level':int(level)})
+    return render(request, 'employee_form.html', {'form': form, 'action': 'Create', 'operations': operations1, 'level':int(level),'active_title':'Employees'})
 
 
 def employee_update(request, pk):
@@ -191,7 +224,7 @@ def employee_update(request, pk):
             return redirect('employee_list') 
     else:
         form = EmployeeForm(instance=employee)
-    return render(request, 'employee_form.html', {'form': form, 'action': 'Update', 'operations': operations1, 'level':int(level)})
+    return render(request, 'employee_form.html', {'form': form, 'action': 'Update', 'operations': operations1, 'level':int(level),'active_title':'Employees'})
 
 
 def employee_disable(request, pk):
@@ -210,12 +243,21 @@ def employee_disable(request, pk):
             return redirect('employee_list')  #Redirect to the employee list or another page
     else:
         form = EmployeeStatusForm(instance=employee)
-    return render(request, 'employee_disable_form.html', {'employee': employee,'form':form, 'operations': operations1, 'level':int(level)})
-
+    return render(request, 'employee_disable_form.html', {'employee': employee,'form':form, 'operations': operations1, 'level':int(level),'active_title':'Employees'})
 
 
 
 def login(request):
+    flag=0
+    if request.user:
+        try:
+            email = request.user.email
+            user = Employee.objects.filter(email=email).first()
+            if user:
+                flag=1
+        except Exception:
+            pass
+
     if request.method == 'POST':
         email = request.POST.get('email')  #Get the email from the POST data
         password = request.POST.get('password_hash')  #Get the password from the POST data
@@ -231,7 +273,9 @@ def login(request):
         if not check_password(password, encoded_password):  # Check password
             messages.error(request, "Incorrect password")
             return redirect('login')
-        
+        flag=1
+
+    if flag==1:    
         # Assuming create_access_token and create_refresh_token are defined elsewhere
         access_token = create_access_token(user)
         refresh_token = create_refresh_token(user)
@@ -253,20 +297,19 @@ def home(request):
     user = get_current_user(request)
     level = user.role
     operations1 = operations[level]
-    return render(request, 'home.html', {'operations': operations1, 'level':int(level)})
-
+    return render(request, 'home.html', {'operations': operations1, 'level':int(level),'active_title':'Home'})
 
 
 
 def project_list(request):
-    validate_user = role_required(request=request,permission_name="employee")
+    validate_user = role_required(request=request,permission_name="manager")
     if isinstance(validate_user, JsonResponse):
         return validate_user
     user = get_current_user(request)
     level = user.role
     operations1 = operations[level]
     projects = Project.objects.all().order_by('created_at')
-    return render(request, 'projects/project_list.html', {'projects': projects, 'operations': operations1, 'level':int(level)})
+    return render(request, 'projects/project_list.html', {'projects': projects, 'operations': operations1, 'level':int(level),'active_title':'Projects'})
 
 def project_create(request):
     validate_user = role_required(request=request,permission_name="admin")
@@ -282,7 +325,7 @@ def project_create(request):
             return redirect('project_list')
     else:
         form = ProjectForm()
-    return render(request, 'projects/project_form.html', {'form': form, 'action': 'Create', 'operations': operations1, 'level':int(level)})
+    return render(request, 'projects/project_form.html', {'form': form, 'action': 'Create', 'operations': operations1, 'level':int(level),'active_title':'Projects'})
 
 def project_update(request, pk):
     validate_user = role_required(request=request, permission_name="admin")
@@ -299,7 +342,7 @@ def project_update(request, pk):
             return redirect('project_list')
     else:
         form = ProjectForm(instance=project)
-    return render(request, 'projects/project_form.html', {'form': form, 'action': 'Update', 'operations': operations1, 'level': int(level)})
+    return render(request, 'projects/project_form.html', {'form': form, 'action': 'Update', 'operations': operations1, 'level': int(level),'active_title':'Projects'})
 
 def project_delete(request, pk):
     validate_user = role_required(request=request,permission_name ="admin")
@@ -312,7 +355,7 @@ def project_delete(request, pk):
     if request.method == 'POST':
         project.delete()
         return redirect('project_list')
-    return render(request, 'projects/project_confirm_delete.html', {'project': project, 'operations': operations1, 'level':int(level)})
+    return render(request, 'projects/project_confirm_delete.html', {'project': project, 'operations': operations1, 'level':int(level),'active_title':'Projects'})
 
 def project_individual_view(request, pk):
     validate_user = role_required(request=request,permission_name="admin")
@@ -322,7 +365,14 @@ def project_individual_view(request, pk):
     level = user.role
     operations1 = operations[level]
     project = get_object_or_404(Project, pk=pk)
-    return render(request, 'projects/project_individual_view.html', {'project': project, 'operations': operations1, 'level':int(level)})
+    return render(request, 'projects/project_individual_view.html', {
+        'project': project, 
+        'operations': operations1, 
+        'level':int(level),
+        'active_title':'Projects',
+        'page_paths':['Projects','Project Individual View'],
+
+        })
 
 
 def employees_under_manager(request):
@@ -336,7 +386,9 @@ def employees_under_manager(request):
     employees = Employee.objects.filter(reporting_manager=manager)
     return render(request, 'employees_under_manager.html', {
         'manager': manager,
-        'employees': employees, 'operations': operations1, 'level':int(level)
+        'employees': employees, 'operations': operations1, 
+        'level':int(level),'active_title':'Employees',
+        'page_paths':['Employees','Employees under manager'],
     })
 
 
@@ -349,22 +401,25 @@ def project_assignation_create(request):
     operations1 = operations[str(level)]
     manager = user
     if request.method == 'POST':
-        form = ProjectAssignationForm(request.POST, logged_in_user=request.user)
+        form = ProjectAssignationForm(request.POST, logged_in_user=user)
         if form.is_valid():
             assignation = form.save(commit=False)
-            if(level<=1):
-                assignation.assigning_manager = request.POST.get('assigning_manager')
-            else:
+            if(level>1):
                 assignation.assigning_manager = manager
             assignation.save()
             return redirect('project_assignation_list')
+        else:
+            print(form.errors)
+            messages.error(request, "submitted form is invalid")
     else:
         form = ProjectAssignationForm(logged_in_user=manager)
     return render(request, 'assignations/project_assignation_form.html', {
         'form': form,
         'action':'Create',
         'operations': operations1,
-        'level':level
+        'level':level,
+        'active_title':'Project Assignations',
+        'page_paths':['Project Assignations','Create Project Assignation'],
     })
 
 
@@ -381,20 +436,319 @@ def project_assignation_update(request, pk):
         form = ProjectAssignationForm(request.POST, instance = assignation, logged_in_user = manager)
         if form.is_valid():
             assignation = form.save(commit=False)
-            assignation.assigning_manager = manager
+            if(int(level)>1):
+                assignation.assigning_manager = manager
             assignation.save()
             return redirect('project_assignation_list')
     else:
         form = ProjectAssignationForm(instance=assignation, logged_in_user=manager)
-    return render(request, 'assignations/project_assignation_form.html', {'form': form, 'action': 'Update','operations': operations1, 'level':int(level)})
+    return render(request, 'assignations/project_assignation_form.html', {
+            'form': form, 
+            'action': 'Update',
+            'operations': operations1, 
+            'level':int(level),
+            'page_paths':['Project Assignation','Project Assignation Update'],
+            'active_title':'Project Assignations'
+        })
 
 
 def project_assignation_list(request):
-    validate_user = role_required(request=request,permission_name="manager")
+    validate_user = role_required(request=request,permission_name="employee")
     if isinstance(validate_user, JsonResponse):
         return validate_user
     user = get_current_user(request)
     level = user.level()
     operations1 = operations[str(level)]
-    assignations = ProjectAssignation.objects.all()
-    return render(request, 'assignations/project_assignation_list.html', {'assignations': assignations,'operations': operations1, 'level':int(level)})
+    if(int(level)==2):
+        assignations = ProjectAssignation.objects.filter(assigning_manager=user)
+    elif(level==3):
+        assignations = ProjectAssignation.objects.filter(employee=user)
+    else:
+        assignations = ProjectAssignation.objects.all()
+
+    projects = set()
+    employees = set()
+    assigning_managers = set()
+    roles = set()
+    statuses = set()
+
+    for assignation in assignations:
+        projects.add(assignation.project)
+        employees.add(assignation.employee)
+        assigning_managers.add(assignation.assigning_manager)
+        roles.add(assignation.role)
+        status = (assignation.status, assignation.get_status_display())  # Use a tuple for uniqueness
+        statuses.add(status)
+
+    # Convert sets back to lists if needed
+    projects = list(projects)
+    employees = list(employees)
+    assigning_managers = list(assigning_managers)
+    roles = list(roles)
+    statuses = [{'num': num, 'name': name} for num, name in statuses]  # Convert back to list of dicts
+
+
+    if request.method == "POST":
+        role = request.POST.get('role_for_form')
+        status = request.POST.get('status')
+        assigning_manager_id = request.POST.get('assigning_manager_id')
+        employee_id = request.POST.get('employee_id')
+        project_id = request.POST.get('project_id')
+        date_input = request.POST.get('dateInput')
+        if(role!='nil'):
+            print("Role is not nil , it is : ",role)
+            assignations=assignations.filter(role=role)
+        if(status!='nil'):
+            print("status is not nil")
+            assignations=assignations.filter(status=status)
+        if(assigning_manager_id!='nil'):
+            print("assigning_manager_id is not nil")
+            assigning_manager = Employee.objects.get(employee_id=assigning_manager_id)
+            assignations = assignations.filter(assigning_manager=assigning_manager)
+        if(employee_id!='nil'):
+            print("employee_id is not nil")
+            employee = Employee.objects.get(employee_id=employee_id)
+            assignations = assignations.filter(employee=employee)
+        if(project_id!='nil'):
+            print("project_id is not nil")
+            project = Project.objects.get(project_id=project_id)
+            assignations = assignations.filter(project=project)
+        if date_input:
+            print("DateInput is : "+date_input)
+            received_date = timezone.datetime.strptime(date_input, '%Y-%m-%d').date()
+            assignations = assignations.filter(start_date__lte=received_date, end_date__gte=received_date)
+
+        html_content =  render(request, 'assignations/project_assignations_filtered_part.html', {
+            'assignations': assignations,
+            'level':int(level),
+            'projects':projects,
+            'employees':employees,
+            'roles':roles,
+            'statuses':statuses,
+            'assigning_managers':assigning_managers,
+        })
+        return JsonResponse({'html': html_content.content.decode('utf-8')})
+
+
+
+    return render(request, 'assignations/project_assignation_list.html', {
+        'assignations': assignations,
+        'operations': operations1, 
+        'level':int(level),
+        'projects':projects,
+        'employees':employees,
+        'roles':roles,
+        'statuses':statuses,
+        'assigning_managers':assigning_managers,
+        'page_paths':['Project Assignations','Project Assignation List'],
+        'active_title':'Project Assignations'
+    })
+
+
+def profile_picture(request):
+    if request.user.is_authenticated:
+        user = request.user
+        profile_picture = ""
+        try:
+            social_account = SocialAccount.objects.get(user=user, provider='google')
+            profile_picture_url = social_account.extra_data.get('picture')
+            profile_picture = profile_picture_url
+        except SocialAccount.DoesNotExist:
+            profile_picture = ""
+        return JsonResponse({'profile_picture': profile_picture})
+    return JsonResponse({'profile_picture': ''})
+        
+
+def profile_view(request):
+    validate_user = role_required(request=request,permission_name="employee")
+    if isinstance(validate_user, JsonResponse):
+        return validate_user
+    user = get_current_user(request)
+    level = user.level()
+    operations1 = operations[str(level)]
+
+    sessions = Session.objects.filter(expire_date__gte=timezone.now())  # Active sessions
+    user_sessions = []
+    for session in sessions:
+        data = session.get_decoded()
+        if str(request.user.id) == str(data.get('_auth_user_id')):  # Match logged-in user
+            user_sessions.append({
+                'session_key': session.session_key,
+                'ip': data.get('ip', 'Unknown IP'),  #If IP is stored
+                'browser': data.get('browser', 'Unknown Browser'),
+                'device': data.get('device', 'Unknown Device'),
+                'last_activity': session.expire_date
+            })
+
+    return render(request, 'profile_view.html', {
+        'user':user,
+        'operations': operations1, 
+        'level':int(level),
+        'page_paths':['Profile'],
+        'active_title':'Profile',
+        'user_sessions': user_sessions,
+    })
+
+
+def submit_time_entry(request):
+    validate_user = role_required(request=request, permission_name="employee")
+    if isinstance(validate_user, JsonResponse):
+        return validate_user
+
+    user = get_current_user(request)
+    level = user.level()
+    operations1 = operations[str(level)]
+
+    if request.method == 'POST':
+        form = TimesheetForm(request.POST, logged_in_user=user)
+        if form.is_valid():
+            timesheet = form.save(commit=False)
+            timesheet.employee = user
+            selected_project = form.cleaned_data.get('project')
+
+            if selected_project not in ['bench', 'training', 'learning']:
+                project_instance = get_object_or_404(Project, project_name=selected_project)
+                timesheet.project_real = project_instance
+            
+            timesheet.save()
+
+            if 'add_new' in request.POST:
+                return redirect('submit_time_entry')
+            return redirect('success_url')
+    else:
+        form = TimesheetForm(logged_in_user=user)
+
+    return render(request, 'timesheet/submit_time_entry.html', {
+        'form': form,
+        'action': 'Create',
+        'operations': operations1,
+        'level': level,
+        'active_title': 'Timesheet',
+        'page_paths': ['Timesheet', 'Submit Time Entry'],
+    })
+
+
+def timesheet_overview(request):
+    validate_user = role_required(request=request, permission_name="employee")
+    if isinstance(validate_user, JsonResponse):
+        return validate_user
+
+    user = get_current_user(request)
+    level = user.level()
+    operations1 = operations[str(level)]
+
+    today = datetime.today().date()
+    to_date_input = today
+    from_date_input = today - timedelta(days=15)
+    time_entries = Timesheet.objects.filter(date__range=[from_date_input, to_date_input])
+
+
+    projects = set()
+    employees = set()
+    
+    if level <= 1:
+        all_projects = Project.objects.all()
+        for p in all_projects:
+            projects.add(p)
+        all_employees =  Employee.objects.all()
+        for e in all_employees:
+            employees.add(e)
+
+    elif level == 2:
+        #user is manager
+        manager = user
+        employees.add(manager)
+        employees_under_manager = Employee.objects.filter(reporting_manager=manager)
+        for emp in employees_under_manager:
+            employees.add(emp)
+        for employee in employees:
+            pas = ProjectAssignation.objects.filter(employee=employee)
+            for pa in pas:
+                projects.add(pa.project)
+        project_assignations = ProjectAssignation.objects.filter(assigning_manager=manager)
+        for pa in project_assignations:
+            employees.add(pa.employee)
+        for employee in employees:
+            pas = ProjectAssignation.objects.filter(employee=employee)
+            for pa in pas:
+                projects.add(pa.project)
+        
+        time_entries = time_entries.filter(project__in=projects)
+        time_entries = time_entries.filter(employee__in=employees)
+                
+    elif level == 3:
+        employee = user
+        employees.add(employee)
+        pas = ProjectAssignation.objects.filter(employee=employee)
+        for pa in pas:
+            projects.add(pa.project)
+        time_entries = time_entries.filter(employee=employees)
+        time_entries = time_entries.filter(project__in=projects)
+        
+    projects = list(projects)
+    employees = list(employees)
+
+
+
+    if request.method == "POST":
+        employee_id = request.POST.get('employee_id')
+        project_id = request.POST.get('project_id')
+        from_date_input = request.POST.get('fromdateInput')
+        to_date_input = request.POST.get('todateInput')
+        
+        today = datetime.today().date()
+        
+        # Set default values if any date input is missing
+        if not from_date_input or not to_date_input:
+            to_date_input = today
+            from_date_input = today - timedelta(days=15)
+        else:
+            # Convert the input strings to date objects
+            to_date_input = datetime.strptime(to_date_input, "%Y-%m-%d").date()
+            from_date_input = datetime.strptime(from_date_input, "%Y-%m-%d").date()
+        
+        # Ensure that from_date is not later than to_date
+        if from_date_input > to_date_input:
+            from_date_input = to_date_input - timedelta(days=15)
+        
+        # Start with all timesheet records
+        time_entries = Timesheet.objects.all()
+        
+        if employee_id != 'nil':
+            print("employee_id is not nil")
+            try:
+                employee = Employee.objects.get(employee_id=employee_id)
+                time_entries = time_entries.filter(employee=employee)
+            except Employee.DoesNotExist:
+                time_entries = time_entries.none()  # or handle error as needed
+                
+        if project_id != 'nil':
+            print("project_id is not nil")
+            try:
+                project = Project.objects.get(project_id=project_id)
+                time_entries = time_entries.filter(project=project)
+            except Project.DoesNotExist:
+                time_entries = time_entries.none()  # or handle error as needed
+
+        # Filter by date range
+        time_entries = time_entries.filter(date__range=[from_date_input, to_date_input])
+
+        html_content =  render(request, 'timesheet/timesheet_overview_filtered_part.html', {
+            'time_entries' : time_entries,
+            'level':int(level),
+            'projects':projects,
+            'employees':employees,
+        })
+        return JsonResponse({
+            'fromdateInputValue' : from_date_input,
+            'todateInputValue' : to_date_input,
+            'html': html_content.content.decode('utf-8')
+        })
+
+
+    return render(request, 'timesheet/timesheet_overview.html', {
+        'operations': operations1,
+        'level': level,
+        'active_title': 'Timesheet',
+        'page_paths': ['Timesheet', 'Timesheet Overview'],
+    })
