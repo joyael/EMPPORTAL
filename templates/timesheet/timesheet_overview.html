@@ -9,9 +9,8 @@
 
     {% include 'main_linkings.html' %}
     <link rel="stylesheet" href="{% static 'css/timesheet_overview.css' %}">
-    <script src="{% static 'js/timesheet_overview.js' %}"></script>
+    <script src="{% static 'js/filter_bar_timesheet_overview.js' %}"></script>
     <link rel="stylesheet" href="{% static 'css/filter_bar_timesheet_overview.css' %}">
-    <script src="{% static 'js/filter_bar.js' %}"></script>
 </head>
 <body>
     {% include 'header.html' %}
@@ -24,32 +23,32 @@
                         <tr>
                             <th class="boxes_th">
                                 <p>Project Hours</p>
-                                <p class="boxes_value" id="project_hours">0.00</p>
+                                <p class="boxes_value" id="project_hours">{{ overview_total_data.total_project_hours }}</p>
                                 <p></p>
                             </th>
                             <th class="boxes_th">
                                 <p>Bench Hour</p>
-                                <p class="boxes_value" id="bench_hours">0.00</p>
+                                <p class="boxes_value" id="bench_hours">{{ overview_total_data.total_bench_hours }}</p>
                             </th>
                             <th class="boxes_th">
                                 <p>Training Hours</p>
-                                <p class="boxes_value" id="training_hours">0.00</p>
+                                <p class="boxes_value" id="training_hours">{{ overview_total_data.total_training_hours }}</p>
                             </th>
                             <th class="boxes_th">
                                 <p>Learning Hours</p>
-                                <p class="boxes_value" id="learning_hours">0.00</p>
+                                <p class="boxes_value" id="learning_hours">{{ overview_total_data.total_learning_hours }}</p>
                             </th>
                             <th class="boxes_th">
                                 <p>Leave Days</p>
-                                <p class="boxes_value" id="leave_days">0.00</p>
+                                <p class="boxes_value" id="leave_days">{{ overview_total_data.total_leave_days }}</p>
                             </th>
                             <th class="boxes_th">
                                 <p>Total Hours</p>
-                                <p class="boxes_value" id="total_hours">0.00</p>
+                                <p class="boxes_value" id="total_hours">{{ overview_total_data.total_total_hours }}</p>
                             </th>
-                            <th id="col_deviation" class="boxes_th has-deviation-bg">
+                            <th id="col_deviation" class="boxes_th  {% if overview_total_data.total_has_deviation %} has-deviation-bg {% endif %}">
                                 <p>Deviation Hours</p>
-                                <p class="boxes_value" id="deviation_hours">-8.00</p>
+                                <p class="boxes_value" id="deviation_hours">{{ overview_total_data.total_deviation }}</p>
                             </th>
                         </tr>
                     </thead>
@@ -57,7 +56,7 @@
                 <div class="filter_row_outer_div">
                     {% include 'timesheet/filter_bar.html' %}
                     <div style="text-align: end;">
-                            <p style="font-size: .9rem">Min Working Hrs : <span style="font-weight: bold" id="workingDayCount" name="workingDayCount">112.00</span></p>
+                            <p style="font-size: .9rem">Min Working Hrs : <span style="font-weight: bold" id="workingDayCount" name="workingDayCount">{{ minimum_working_hours }}</span></p>
                     </div>
                 </div>
 
@@ -76,40 +75,40 @@
                         </tr>
                     </thead>
                     <tbody class="overview_table_data" id="overview_table_data">
-                        {% for employee in employees %}
+                        {% for row in the_timesheet_overview_data %}
                         <tr class="overview_table_tr">
                             <td class="overview_table_td">
-                                <b>{{ employee }}</b>
+                                <b>{{ row.emp_name }}</b>
                             </td>
                             <td class="overview_table_td">
-                                {{ reporting_manager }}
+                                {{ row.reporting_manager }}
                             </td>
                             <td class="overview_table_td text-right">
-                                {{ project_hours }}
+                                {{ row.project_hours }}
                             </td>
                             <td class="overview_table_td text-right">
-                                {{ bench_hours }}
+                                {{ row.bench_hours }}
                             </td>
                             <td class="overview_table_td text-right">
-                                {{ leave_days }}
+                                {{ row.leave_days }}
                             </td>
                             <td class="overview_table_td text-right">
-                                {{ training_hours }}
+                                {{ row.training_hours }}
                             </td>
                             <td class="overview_table_td text-right">
-                                {{ learning_hours }}
+                                {{ row.learning_hours }}
                             </td>
                             <td class="overview_table_td text-right">
-                                {{ total_hours }}
+                                {{ row.total_hours }}
                             </td>
-                            <td class="overview_table_td text-right  has-deviation">
-                                {{ deviation }}
+                            <td class="overview_table_td text-right {% if row.has_deviation %} has-deviation {% endif %}">
+                                {{ row.deviation }}
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                     <tfoot class="overview_table_footer" id="overview_table_footer">
-                        <tr class="overview_table_footer_tr">
+                        <tr class="overview_table_footer_tr" id="overview_table_footer_tr">
                             <th class="overview_table_footer_th">
 
                             </th>
@@ -117,29 +116,57 @@
                                 Total
                             </th>
                             <th class="overview_table_footer_th text-right">
-                                0.00
+                                {{ overview_total_data.total_project_hours }}
                             </th>
                             <th class="overview_table_footer_th text-right">
-                                0.00
+                                {{ overview_total_data.total_bench_hours }}
                             </th>
                             <th class="overview_table_footer_th text-right">
-                                0.00
+                                {{ overview_total_data.total_leave_days }}
                             </th>
                             <th class="overview_table_footer_th text-right">
-                                96.00
+                                {{ overview_total_data.total_training_hours }}
                             </th>
                             <th class="overview_table_footer_th text-right">
-                                0.00
+                                {{ overview_total_data.total_learning_hours }}
                             </th>
                             <th class="overview_table_footer_th text-right">
-                                96.00
+                                {{ overview_total_data.total_total_hours }}
                             </th>
-                            <th class="overview_table_footer_th text-right  has-deviation">
-                                -8.00
+                            <th class="overview_table_footer_th text-right  {% if overview_total_data.total_has_deviation %} has-deviation {% else %} no-deviation {% endif %}">
+                                {{ overview_total_data.total_deviation }}
                             </th>
                         </tr>
                     </tfoot>
-                </table>
+                </table> 
+
+
+                <div class="pagination_div" id="id_pagination_div">
+                    <div class="how_much_results">
+                        <span>Page {{ items.number }} of {{ items.paginator.num_pages }}</span>
+                    </div>
+                    <div class="the_number_and_page_point">
+                        {% if items.has_previous %}
+                            <div class="bordered">
+                                <button onclick = "window.location.href='?page=1';" >First</a>
+                            </div>
+                            <div class="bordered">
+                                <button><img src="{% static 'images/less_than_icon.png' %}"></button>
+                            </div>
+                        {% endif %}
+                            <div class="bordered">
+                                <button>{{ items.number }}</button>
+                            </div>
+                        {% if items.has_next %}
+                            <div class="bordered">
+                                <button><img src="{% static 'images/greater_than_icon.png' %}"></button>
+                            </div>
+                            <div class="bordered">
+                                <button><a href="?page={{ items.paginator.num_pages }}">Last</a></button>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
 
 
             </div>

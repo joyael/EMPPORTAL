@@ -1,7 +1,6 @@
 {% load static %}
 
 <div class="filter_div">
-
     <div class="filter_one_div">
         <div class="filter_label_div">
             From Date
@@ -75,7 +74,7 @@
             &nbsp;
         </div>
         <div class="filter_search_button_inside_div">
-            <button class="filter_search_button" id="filter_search_button" data-filterSubmit-url="{% url 'timesheet_overview' %}">
+            <button class="filter_search_button" id="filter_search_button" data-filterSubmit-url="{% url 'timesheet_breakdown' %}">
                 <img src="{% static 'images/search_icon.png' %}" alt="Search Icon" class="filter_search_icon" >
             </button>
         </div>

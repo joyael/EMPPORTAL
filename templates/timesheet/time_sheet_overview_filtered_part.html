@@ -1,0 +1,32 @@
+{% load static %}
+{% for row in the_timesheet_overview_data %}
+<tr class="overview_table_tr">
+    <td class="overview_table_td">
+        <b>{{ row.emp_name }}</b>
+    </td>
+    <td class="overview_table_td">
+        {{ row.reporting_manager }}
+    </td>
+    <td class="overview_table_td text-right">
+        {{ row.project_hours }}
+    </td>
+    <td class="overview_table_td text-right">
+        {{ row.bench_hours }}
+    </td>
+    <td class="overview_table_td text-right">
+        {{ row.leave_days }}
+    </td>
+    <td class="overview_table_td text-right">
+        {{ row.training_hours }}
+    </td>
+    <td class="overview_table_td text-right">
+        {{ row.learning_hours }}
+    </td>
+    <td class="overview_table_td text-right">
+        {{ row.total_hours }}
+    </td>
+    <td class="overview_table_td text-right {% if row.has_deviation %} has-deviation {% endif %}">
+        {{ row.deviation }}
+    </td>
+</tr>
+{% endfor %}

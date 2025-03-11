@@ -42,5 +42,9 @@ urlpatterns = [
 
     path('timesheet/create/', submit_time_entry, name='submit_time_entry'),
     path('timesheet/timesheet_overview', timesheet_overview, name='timesheet_overview'),
+    path('timesheet/timesheet_breakdown', timesheet_breakdown, name='timesheet_breakdown'),
+
+    path('leaves/apply/', apply_leave, name='apply_leave'),
+    path('leave-applications/', leave_applications, name='leave_applications'),
     
 ]

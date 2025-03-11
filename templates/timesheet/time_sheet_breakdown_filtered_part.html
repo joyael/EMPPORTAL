@@ -1,0 +1,25 @@
+{% load static %}
+{% for row in paginated_time_entries %}
+    <tr class="overview_table_tr">
+        <td class="overview_table_td">
+            <b>{{ row.formatted_date }}</b>
+        </td>
+        <td class="overview_table_td">
+            {{ row.project }}
+        </td>
+        <td class="overview_table_td">
+            {{ row.task_id }}
+        </td>
+        <td class="overview_table_td">
+            {{ row.description }}
+        </td>
+        <td class="overview_table_td text-right">
+            {{ row.total_hours_decimal }}
+        </td>
+        <td class="overview_table_td">
+            <button class="mybutton" onclick="gotoupdatetimeentry()" id="update_button" data-updateTimeEntry-url="{% url 'submit_time_entry' %}">
+                <img class="add_img_icon" src="{% static 'images/edit_icon.png' %}" alt="Edit">
+            </button>
+        </td>
+    </tr>
+{% endfor %}

@@ -1,7 +1,7 @@
 import datetime
 from django import forms
 from django.core.validators import MaxLengthValidator,MinValueValidator, RegexValidator
-from .models import Permission, Department, Employee, Project, ProjectAssignation, Timesheet
+from .models import LeaveRequest, Permission, Department, Employee, Project, ProjectAssignation, Timesheet
 from django.core.exceptions import ValidationError
 import re
 
@@ -337,3 +337,20 @@ class TimesheetForm(forms.ModelForm):
             raise forms.ValidationError("Description must be less than 1000 characters.")
 
         return cleaned_data
+    
+
+class LeaveRequestForm(forms.ModelForm):
+    class Meta:
+        model = LeaveRequest
+        fields = ['date', 'leave_type', 'leave_genre','reason']
+        widgets = {
+            'date': forms.DateInput(attrs={'type': 'date'}),  # Use a date input widget for the date field
+            'description': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Enter reason...'}),
+        }
+        labels = {
+            'leave_type': 'Leave Type',
+            'date': 'Leave Date',
+            'leave_genre': 'Full day or Half day',
+            'reason': 'Reason',
+        }
+        

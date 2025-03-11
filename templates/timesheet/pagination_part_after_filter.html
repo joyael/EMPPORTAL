@@ -1,0 +1,37 @@
+{% load static %}
+<div class="how_much_results">
+    <span>Page {{ items.number }} of {{ items.paginator.num_pages }}</span>
+</div>
+
+<div class="the_number_and_page_point">
+    {% if items.has_previous %}
+        <!-- First Page -->
+        <div class="bordered">
+            <button onclick="window.location.href='?page=1';">First</button>
+        </div>
+        <!-- Previous Page -->
+        <div class="bordered">
+            <button onclick="window.location.href='?page={{ items.previous_page_number }}';">
+                <img src="{% static 'images/less_than_icon.png' %}" alt="Previous">
+            </button>
+        </div>
+    {% endif %}
+
+    <!-- Current Page -->
+    <div class="bordered">
+        <button disabled>{{ items.number }}</button>
+    </div>
+
+    {% if items.has_next %}
+        <!-- Next Page -->
+        <div class="bordered">
+            <button onclick="window.location.href='?page={{ items.next_page_number }}';">
+                <img src="{% static 'images/greater_than_icon.png' %}" alt="Next">
+            </button>
+        </div>
+        <!-- Last Page -->
+        <div class="bordered">
+            <button onclick="window.location.href='?page={{ items.paginator.num_pages }}';">Last</button>
+        </div>
+    {% endif %}
+</div>

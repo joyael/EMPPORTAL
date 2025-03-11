@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password
+from datetime import datetime
 
 #Create your models here.
 
@@ -164,6 +165,7 @@ class ProjectAssignation(models.Model):
     def __str__(self):
         return f"{self.project.project_name} - {self.employee.first_name} {self.employee.last_name} ({self.role})"
     
+SHIFT_HOURS_IN_A_DAY = 8
 
 class Timesheet(models.Model):
     date = models.DateField()  
@@ -179,7 +181,47 @@ class Timesheet(models.Model):
     def __str__(self):
         return f'Timesheet for {self.date} - {self.hours}h {self.minutes}m {self.seconds}s'
 
+    def formatted_date(self):
+        return self.date.strftime('%a, %d-%b-%Y')
+    
     class Meta:
         verbose_name = 'Timesheet'
         verbose_name_plural = 'Timesheets'
+    
+    def total_hours_decimal(self):
+        total_hours = self.hours + (self.minutes / 60) + (self.seconds / 3600)
+        num = round(total_hours, 2)
+        float_num = format(num, ".2f")
+        return float_num 
+    
 
+RH_YEARLY_COUNT = 2
+CASUAL_LEAVE_QUARTERLY_COUNT = 3
+SICK_LEAVE_QUARTERLY_COUNT = 1.5
+
+class LeaveRequest(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    LEAVE_TYPE_CHOICES = [
+        ('casual', 'Casual Leave'),
+        ('sick', 'Sick Leave'),
+        ('restricted', 'Restricted Holiday'),
+        ('LOP', 'Loss of Pay'),
+    ]
+    leave_type = models.CharField(max_length=128, choices=LEAVE_TYPE_CHOICES)
+    date = models.DateField(null=True, blank=True)
+    LEAVE_GENRE_CHOICES = [
+        ('full_day', 'Full Day'),
+        ('first_half', 'First Half'),
+        ('second_half', 'Second Half'),
+    ]
+    leave_genre = models.CharField(max_length=128, choices=LEAVE_GENRE_CHOICES)
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+    status = models.CharField(max_length=128, choices=STATUS_CHOICES, default='pending')  
+    reason = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.employee} - {self.leave_type} on {self.date} ({self.status})"

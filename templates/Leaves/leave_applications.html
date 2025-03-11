@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave Applications</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.2/css/bootstrap.min.css">
+    {% load static %}
+
+    {% include 'main_linkings.html' %}
+    <link rel="stylesheet" href="{% static 'css/timesheet_overview.css' %}">
+    <script src="{% static 'js/filter_bar_timesheet_overview.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'css/filter_bar_timesheet_overview.css' %}">
+</head>
+<body>
+    {% include 'header.html' %}
+    <div class="container mt-5">
+        <div class="timesheet_container">
+            <div>
+                <h2 class="timesheet_overview_h2">Leave Applications</h2>
+
+                <table id="overview_table_report" name="overview_table_report" class="overview_table_report">
+                    <thead class="overview_table_head">
+                        <tr>                            
+                            <th>Leave Type</th>
+                            <th>Date</th>
+                            <th>Leave Genre</th>
+                            <th>Status</th>
+                            <th>Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody class="overview_table_data" id="overview_table_data">
+                        {% for request in leave_requests %}
+                        <tr class="overview_table_tr">
+                            <td class="overview_table_td">
+                                <b>{{ request.leave_type }}</b>
+                            </td>
+                            <td class="overview_table_td">
+                                {{ request.date }}
+                            </td>
+                            <td class="overview_table_td text-right">
+                                {{ request.leave_genre }}
+                            </td>
+                            <td class="overview_table_td text-right">
+                                {{ request.status }}
+                            </td>
+                            <td class="overview_table_td text-right">
+                                {{ request.reason }}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5">No leave applications found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table> 
+
+
+                <div class="pagination_div" id="id_pagination_div">
+                    <div class="how_much_results">
+                        <span>Page {{ items.number }} of {{ items.paginator.num_pages }}</span>
+                    </div>
+                    <div class="the_number_and_page_point">
+                        {% if items.has_previous %}
+                            <div class="bordered">
+                                <button onclick = "window.location.href='?page=1';" >First</a>
+                            </div>
+                            <div class="bordered">
+                                <button><img src="{% static 'images/less_than_icon.png' %}"></button>
+                            </div>
+                        {% endif %}
+                            <div class="bordered">
+                                <button>{{ items.number }}</button>
+                            </div>
+                        {% if items.has_next %}
+                            <div class="bordered">
+                                <button><img src="{% static 'images/greater_than_icon.png' %}"></button>
+                            </div>
+                            <div class="bordered">
+                                <button><a href="?page={{ items.paginator.num_pages }}">Last</a></button>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+    {% include 'footer.html' %}
+</body> 
+</html>

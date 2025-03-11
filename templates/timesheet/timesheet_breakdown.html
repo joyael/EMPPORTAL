@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timesheet Breakdown</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.2/css/bootstrap.min.css">
+    {% load static %}
+
+    {% include 'main_linkings.html' %}
+    <link rel="stylesheet" href="{% static 'css/timesheet_overview.css' %}">
+    <script src="{% static 'js/filter_bar_timesheet_breakdown.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'css/filter_bar_timesheet_overview.css' %}">
+</head>
+<body>
+    {% include 'header.html' %}
+    <div class="container mt-5">
+        <div class="timesheet_container">
+            <div>
+                <h2 class="timesheet_overview_h2">Timesheet Breakdown</h2>
+                <table id="tbl-dashboard" class="tbl-dashboard">
+                    <thead>
+                        <tr>
+                            <th class="boxes_th">
+                                <p>Available (You)</p>
+                                <p class="boxes_value" id="project_hours">{{ total_time_available_you }}</p>
+                            </th>
+                            <th class="boxes_th">
+                                <p>Logged (You)</p>
+                                <p class="boxes_value" id="bench_hours">{{ total_time_logged_you }}</p>
+                            </th>
+                            <th id="col_deviation" class="boxes_th">
+                                <p>Deviation (You)</p>
+                                <p id="deviation_hours" class="boxes_value {% if has_deviation_you %} deviation_color {% endif %}">{{ deviation_you }}</p>
+                            </th>
+                        </tr>
+                    </thead>
+                </table>
+                <div class="filter_row_outer_div">
+                    {% include 'timesheet/filter_bar_timesheet_breakdown.html' %}
+                    <div style="text-align: end;">
+                        <button class="mybutton" onclick="gotosubmittimeentry()" id="add_button" data-submitTimeEntry-url="{% url 'submit_time_entry' %}">
+                            <img class="add_img_icon" src="{% static 'images/plus_icon.png' %}">
+                        </button>
+                    </div>
+                </div>
+
+                <table id="overview_table_report" name="overview_table_report" class="overview_table_report">
+                    <thead class="overview_table_head">
+                        <tr>                            
+                            <th>Date</th>
+                            <th>Project</th>
+                            <th>Task ID</th>
+                            <th>Comment</th>
+                            <th>Hours</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="overview_table_data" id="overview_table_data">
+                        {% for row in paginated_time_entries %}
+                            <tr class="overview_table_tr">
+                                <td class="overview_table_td">
+                                    <b>{{ row.formatted_date }}</b>
+                                </td>
+                                <td class="overview_table_td">
+                                    {{ row.project }}
+                                </td>
+                                <td class="overview_table_td">
+                                    {{ row.task_id }}
+                                </td>
+                                <td class="overview_table_td">
+                                    {{ row.description }}
+                                </td>
+                                <td class="overview_table_td text-right">
+                                    {{ row.total_hours_decimal }}
+                                </td>
+                                <td class="overview_table_td">
+                                    <button class="mybutton" onclick="gotoupdatetimeentry()" id="update_button" data-updateTimeEntry-url="{% url 'submit_time_entry' %}">
+                                        <img class="add_img_icon" src="{% static 'images/edit_icon.png' %}" alt="Edit">
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="overview_table_footer" id="overview_table_footer">
+                        <tr class="overview_table_footer_tr" id="overview_table_footer_tr">
+                            <th class="overview_table_footer_th"> </th>
+                            <th class="overview_table_footer_th text-right">   </th>
+                            <th class="overview_table_footer_th text-right">   </th>
+                            <th class="overview_table_footer_th text-right">Total</th>
+                            <th class="overview_table_footer_th text-right" id="total_timesheet_time">  {{ total_timesheet_time }}  </th>
+                            <th class="overview_table_footer_th text-right">   </th>
+                        </tr>
+                        <tr class="overview_table_footer_tr" id="overview_table_footer_tr">
+                            <th class="overview_table_footer_th"> </th>
+                            <th class="overview_table_footer_th text-right">   </th>
+                            <th class="overview_table_footer_th text-right">   </th>
+                            <th class="overview_table_footer_th text-right"> Available (You) </th>
+                            <th class="overview_table_footer_th text-right" id="total_time_available_you">  {{ total_time_available_you }}  </th>
+                            <th class="overview_table_footer_th text-right">   </th>
+                        </tr>
+                        <tr class="overview_table_footer_tr" id="overview_table_footer_tr">
+                            <th class="overview_table_footer_th"> </th>
+                            <th class="overview_table_footer_th text-right">   </th>
+                            <th class="overview_table_footer_th text-right">   </th>
+                            <th class="overview_table_footer_th text-right"> Logged (You) </th>
+                            <th class="overview_table_footer_th text-right" id="total_time_logged_you">  {{ total_time_logged_you }}  </th>
+                            <th class="overview_table_footer_th text-right">   </th>
+                        </tr>
+                        <tr class="overview_table_footer_tr" id="overview_table_footer_tr">
+                            <th class="overview_table_footer_th"> </th>
+                            <th class="overview_table_footer_th text-right">   </th>
+                            <th class="overview_table_footer_th text-right">   </th>
+                            <th class="overview_table_footer_th text-right "> Deviation (You) </th>
+                            <th class="overview_table_footer_th text-right {% if has_deviation_you %} has-deviation {% else %} no-deviation {% endif %}" id="deviation_you">  {{ deviation_you }}  </th>
+                            <th class="overview_table_footer_th text-right">   </th>
+                        </tr>
+                    </tfoot>
+                </table> 
+
+
+                <div class="pagination_div" id="id_pagination_div">
+                    <div class="how_much_results">
+                        <span>Page {{ items.number }} of {{ items.paginator.num_pages }}</span>
+                    </div>
+                    <div class="the_number_and_page_point">
+                        {% if items.has_previous %}
+                            <div class="bordered">
+                                <button onclick = "window.location.href='?page=1';" >First</a>
+                            </div>
+                            <div class="bordered">
+                                <button><img src="{% static 'images/less_than_icon.png' %}"></button>
+                            </div>
+                        {% endif %}
+                            <div class="bordered">
+                                <button>{{ items.number }}</button>
+                            </div>
+                        {% if items.has_next %}
+                            <div class="bordered">
+                                <button><img src="{% static 'images/greater_than_icon.png' %}"></button>
+                            </div>
+                            <div class="bordered">
+                                <button><a href="?page={{ items.paginator.num_pages }}">Last</a></button>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+    {% include 'footer.html' %}
+</body> 
+</html>

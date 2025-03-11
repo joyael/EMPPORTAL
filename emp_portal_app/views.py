@@ -6,11 +6,16 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.views import View
 from django.utils import timezone
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import jwt
+
+
+
 
 from EMPPORTAL import settings
 from emp_portal_app.auth import get_current_user, role_required
-from .operations_by_role import operations
+from emp_portal_app.models import SHIFT_HOURS_IN_A_DAY
+from .operations_by_role import check_leave_balance, check_leave_conflicts, get_the_break_down_total_data, get_the_overview_total_data, operations,timesheeet_overview_data_extract
 
 from .forms import *
 from .utils import create_access_token,check_refresh_token,create_refresh_token,insert_refresh_token, is_refresh_token_active, make_refresh_token_inactive
@@ -25,6 +30,8 @@ import json
 from allauth.socialaccount.models import SocialAccount
 
 from datetime import datetime, timedelta
+from django.utils.timezone import now
+from emp_portal_app.models import CASUAL_LEAVE_QUARTERLY_COUNT, RH_YEARLY_COUNT, SHIFT_HOURS_IN_A_DAY, SICK_LEAVE_QUARTERLY_COUNT
 
 
 # Create your views here.
@@ -614,7 +621,7 @@ def submit_time_entry(request):
 
             if 'add_new' in request.POST:
                 return redirect('submit_time_entry')
-            return redirect('success_url')
+            return redirect('timesheet_breakdown')
     else:
         form = TimesheetForm(logged_in_user=user)
 
@@ -645,6 +652,14 @@ def timesheet_overview(request):
 
     projects = set()
     employees = set()
+    print("Length of employees at first : ",len(employees))
+
+
+    constant_project_things = [
+        {'project_name':'Bench','project_id':'bench'},
+        {'project_name':'Training','project_id':'training'},
+        {'project_name':'Learning','project_id':'learning'},
+    ]
     
     if level <= 1:
         all_projects = Project.objects.all()
@@ -672,8 +687,6 @@ def timesheet_overview(request):
             pas = ProjectAssignation.objects.filter(employee=employee)
             for pa in pas:
                 projects.add(pa.project)
-        
-        time_entries = time_entries.filter(project__in=projects)
         time_entries = time_entries.filter(employee__in=employees)
                 
     elif level == 3:
@@ -682,13 +695,62 @@ def timesheet_overview(request):
         pas = ProjectAssignation.objects.filter(employee=employee)
         for pa in pas:
             projects.add(pa.project)
-        time_entries = time_entries.filter(employee=employees)
-        time_entries = time_entries.filter(project__in=projects)
+        time_entries = time_entries.filter(employee=employee)
         
     projects = list(projects)
     employees = list(employees)
 
+    projects.extend(constant_project_things)
 
+    the_timesheet_overview_data = []
+    overview_total_data = dict()
+    minimum_working_hours = 0
+
+    output = timesheeet_overview_data_extract(user,from_date_input,to_date_input,employees,time_entries)
+
+    the_timesheet_overview_data = output["the_timesheet_overview_data"]
+    print("Actual length of timesheet overview data : ",len(the_timesheet_overview_data))
+    item_list = the_timesheet_overview_data  # Get all data
+    page_number = request.GET.get('page', 1)  # Get the page number
+    items_per_page = 50  # Number of items per page
+    paginator = Paginator(item_list, items_per_page)
+
+    try:
+        page_number = int(page_number)  # Ensure it's an integer
+        items = paginator.page(page_number)  # Get the requested page
+    except PageNotAnInteger:
+        items = paginator.page(1)  # Default to first page if not an integer
+    except EmptyPage:
+        items = paginator.page(paginator.num_pages)  # Get last page if out of range
+    
+    print("Length after pagination : ",len(items))
+
+    # Convert to list if needed
+    paginated_items = list(items)
+
+    paginated_timesheet_overview_data = paginated_items
+    overview_total_data = get_the_overview_total_data(paginated_timesheet_overview_data)
+    minimum_working_hours = output["minimum_working_hours"]
+    fromdateInputValue = from_date_input.strftime('%Y-%m-%d')
+    todateInputValue = to_date_input.strftime('%Y-%m-%d')
+
+
+
+    if request.method != "POST":
+        return render(request, 'timesheet/timesheet_overview.html', {
+            'the_timesheet_overview_data':items,
+            'items':items,
+            'overview_total_data':overview_total_data,
+            'minimum_working_hours':minimum_working_hours,
+            'projects':projects,
+            'employees':employees,
+            'fromdateInputValue' : fromdateInputValue,
+            'todateInputValue' : todateInputValue,
+            'operations': operations1,
+            'level': level,
+            'active_title': 'Timesheet',
+            'page_paths': ['Timesheet', 'Timesheet Overview'],
+        })
 
     if request.method == "POST":
         employee_id = request.POST.get('employee_id')
@@ -718,6 +780,7 @@ def timesheet_overview(request):
             print("employee_id is not nil")
             try:
                 employee = Employee.objects.get(employee_id=employee_id)
+                employees = [employee,]
                 time_entries = time_entries.filter(employee=employee)
             except Employee.DoesNotExist:
                 time_entries = time_entries.none()  # or handle error as needed
@@ -725,7 +788,10 @@ def timesheet_overview(request):
         if project_id != 'nil':
             print("project_id is not nil")
             try:
-                project = Project.objects.get(project_id=project_id)
+                if project_id in ('bench', 'training', 'learning'):
+                    project =  project_id
+                else:
+                    project = Project.objects.get(project_id=project_id)
                 time_entries = time_entries.filter(project=project)
             except Project.DoesNotExist:
                 time_entries = time_entries.none()  # or handle error as needed
@@ -733,22 +799,368 @@ def timesheet_overview(request):
         # Filter by date range
         time_entries = time_entries.filter(date__range=[from_date_input, to_date_input])
 
-        html_content =  render(request, 'timesheet/timesheet_overview_filtered_part.html', {
-            'time_entries' : time_entries,
+        output = timesheeet_overview_data_extract(user,from_date_input,to_date_input,employees,time_entries)
+        the_timesheet_overview_data = output["the_timesheet_overview_data"]
+        item_list = the_timesheet_overview_data  # Get all data
+        page_number = request.GET.get('page', 1)  # Get the page number
+        items_per_page = 50  # Number of items per page
+        paginator = Paginator(item_list, items_per_page)
+
+        try:
+            page_number = int(page_number)  #Ensure it's an integer
+            items = paginator.page(page_number)  #Get the requested page
+        except PageNotAnInteger:
+            items = paginator.page(1)  #Default to first page if not an integer
+        except EmptyPage:
+            items = paginator.page(paginator.num_pages)  #Get last page if out of range
+
+        # Convert to list if needed
+        paginated_items = list(items)
+
+        paginated_timesheet_overview_data = paginated_items
+
+        overview_total_data = get_the_overview_total_data(paginated_timesheet_overview_data)
+        minimum_working_hours = output["minimum_working_hours"]
+        fromdateInputValue = from_date_input.strftime('%Y-%m-%d')
+        todateInputValue = to_date_input.strftime('%Y-%m-%d')
+
+
+        html_content =  render(request, 'timesheet/time_sheet_overview_filtered_part.html', {
+            'the_timesheet_overview_data' : items,
             'level':int(level),
-            'projects':projects,
-            'employees':employees,
         })
+        html_content_p =  render(request, 'timesheet/pagination_part_after_filter.html', {
+            'items' : items,
+            'level':int(level),
+        })
+        print(overview_total_data)
         return JsonResponse({
             'fromdateInputValue' : from_date_input,
             'todateInputValue' : to_date_input,
-            'html': html_content.content.decode('utf-8')
+            'html': html_content.content.decode('utf-8'),
+            'html_p': html_content_p.content.decode('utf-8'),
+            'minimum_working_hours':minimum_working_hours,
+            'timesheet_overview_data':paginated_items,
+            'overview_total_data':overview_total_data,
         })
 
 
-    return render(request, 'timesheet/timesheet_overview.html', {
+def timesheet_breakdown(request):
+    validate_user = role_required(request=request, permission_name="employee")
+    if isinstance(validate_user, JsonResponse):
+        return validate_user
+
+    user = get_current_user(request)
+    level = user.level()
+    operations1 = operations[str(level)]
+
+    today = datetime.today().date()
+    to_date_input = today
+    from_date_input = today - timedelta(days=15)
+    time_entries = Timesheet.objects.filter(date__range=[from_date_input, to_date_input])
+
+
+    projects = set()
+    employees = set()
+    print("Length of employees at first : ",len(employees))
+
+
+    constant_project_things = [
+        {'project_name':'Bench','project_id':'bench'},
+        {'project_name':'Training','project_id':'training'},
+        {'project_name':'Learning','project_id':'learning'},
+    ]
+    
+    if level <= 1:
+        all_projects = Project.objects.all()
+        for p in all_projects:
+            projects.add(p)
+        all_employees =  Employee.objects.all()
+        for e in all_employees:
+            employees.add(e)
+
+    elif level == 2:
+        #user is manager
+        manager = user
+        employees.add(manager)
+        employees_under_manager = Employee.objects.filter(reporting_manager=manager)
+        for emp in employees_under_manager:
+            employees.add(emp)
+        for employee in employees:
+            pas = ProjectAssignation.objects.filter(employee=employee)
+            for pa in pas:
+                projects.add(pa.project)
+        project_assignations = ProjectAssignation.objects.filter(assigning_manager=manager)
+        for pa in project_assignations:
+            employees.add(pa.employee)
+        for employee in employees:
+            pas = ProjectAssignation.objects.filter(employee=employee)
+            for pa in pas:
+                projects.add(pa.project)
+        time_entries = time_entries.filter(employee__in=employees)
+                
+    elif level == 3:
+        employee = user
+        employees.add(employee)
+        pas = ProjectAssignation.objects.filter(employee=employee)
+        for pa in pas:
+            projects.add(pa.project)
+        time_entries = time_entries.filter(employee=employee)
+        
+    projects = list(projects)
+    employees = list(employees)
+
+    projects.extend(constant_project_things)
+
+    # the_timesheet_overview_data = []
+    breakdown_total_data = dict()
+    minimum_working_hours = 0
+
+    # output = timesheeet_overview_data_extract(user,from_date_input,to_date_input,employees,time_entries)
+
+    # the_timesheet_overview_data = output["the_timesheet_overview_data"]
+    # print("Actual length of timesheet overview data : ",len(the_timesheet_overview_data))
+    item_list = time_entries  # Get all data
+    page_number = request.GET.get('page', 1)  # Get the page number
+    items_per_page = 50  # Number of items per page
+    paginator = Paginator(item_list, items_per_page)
+
+    try:
+        page_number = int(page_number)  # Ensure it's an integer
+        items = paginator.page(page_number)  # Get the requested page
+    except PageNotAnInteger:
+        items = paginator.page(1)  # Default to first page if not an integer
+    except EmptyPage:
+        items = paginator.page(paginator.num_pages)  # Get last page if out of range
+    
+    print("Length after pagination : ",len(items))
+
+    # Convert to list if needed
+    paginated_items = list(items)
+
+    paginated_time_entries = paginated_items
+    breakdown_total_data = get_the_break_down_total_data(paginated_time_entries,user, from_date_input, to_date_input)
+    total_timesheet_time = breakdown_total_data["total_timesheet_time"]
+    total_time_available_you = breakdown_total_data["total_time_available_you"]
+    total_time_logged_you = breakdown_total_data["total_time_logged_you"]
+    deviation_you = breakdown_total_data["deviation_you"]
+    has_deviation_you = True if deviation_you < 0 else False
+    deviation_you = format(deviation_you, ".2f")
+
+
+
+    fromdateInputValue = from_date_input.strftime('%Y-%m-%d')
+    todateInputValue = to_date_input.strftime('%Y-%m-%d')
+
+
+    if request.method != "POST":
+        return render(request, 'timesheet/timesheet_breakdown.html', {
+            'paginated_time_entries':paginated_time_entries,
+            'the_timesheet_overview_data':items,
+            'items':items,
+            'projects':projects,
+            'employees':employees,
+            'fromdateInputValue' : fromdateInputValue,
+            'todateInputValue' : todateInputValue,
+            'total_timesheet_time':total_timesheet_time,
+            'total_time_available_you':total_time_available_you,
+            'total_time_logged_you':total_time_logged_you,
+            'deviation_you':deviation_you,
+            'has_deviation_you':has_deviation_you,
+            'operations': operations1,
+            'level': level,
+            'active_title': 'Timesheet',
+            'page_paths': ['Timesheet', 'Timesheet Overview'],
+        })
+    
+    if request.method == "POST":
+        employee_id = request.POST.get('employee_id')
+        project_id = request.POST.get('project_id')
+        from_date_input = request.POST.get('fromdateInput')
+        to_date_input = request.POST.get('todateInput')
+        
+        today = datetime.today().date()
+        
+        # Set default values if any date input is missing
+        if not from_date_input or not to_date_input:
+            to_date_input = today
+            from_date_input = today - timedelta(days=15)
+        else:
+            # Convert the input strings to date objects
+            to_date_input = datetime.strptime(to_date_input, "%Y-%m-%d").date()
+            from_date_input = datetime.strptime(from_date_input, "%Y-%m-%d").date()
+        
+        # Ensure that from_date is not later than to_date
+        if from_date_input > to_date_input:
+            from_date_input = to_date_input - timedelta(days=15)
+        
+        # Start with all timesheet records
+        time_entries = Timesheet.objects.all()
+        
+        if employee_id != 'nil':
+            print("employee_id is not nil")
+            try:
+                employee = Employee.objects.get(employee_id=employee_id)
+                employees = [employee,]
+                time_entries = time_entries.filter(employee=employee)
+            except Employee.DoesNotExist:
+                time_entries = time_entries.none()  # or handle error as needed
+                
+        if project_id != 'nil':
+            print("project_id is not nil")
+            try:
+                if project_id in ('bench', 'training', 'learning'):
+                    project =  project_id
+                else:
+                    project = Project.objects.get(project_id=project_id)
+                time_entries = time_entries.filter(project=project)
+            except Project.DoesNotExist:
+                time_entries = time_entries.none()  # or handle error as needed
+
+        # Filter by date range
+        time_entries = time_entries.filter(date__range=[from_date_input, to_date_input])
+
+        item_list = time_entries  # Get all data
+        page_number = request.GET.get('page', 1)  # Get the page number
+        items_per_page = 50  # Number of items per page
+        paginator = Paginator(item_list, items_per_page)
+
+        try:
+            page_number = int(page_number)  # Ensure it's an integer
+            items = paginator.page(page_number)  # Get the requested page
+        except PageNotAnInteger:
+            items = paginator.page(1)  # Default to first page if not an integer
+        except EmptyPage:
+            items = paginator.page(paginator.num_pages)  # Get last page if out of range
+        
+        print("Length after pagination : ",len(items))
+
+        # Convert to list if needed
+        paginated_items = list(items)
+
+        paginated_timesheet_overview_data = paginated_items
+
+        paginated_time_entries = paginated_items
+        breakdown_total_data = get_the_break_down_total_data(paginated_time_entries,user, from_date_input, to_date_input)
+        total_timesheet_time = breakdown_total_data["total_timesheet_time"]
+        total_time_available_you = breakdown_total_data["total_time_available_you"]
+        total_time_logged_you = breakdown_total_data["total_time_logged_you"]
+        deviation_you = breakdown_total_data["deviation_you"]
+        has_deviation_you = True if deviation_you < 0 else False
+        deviation_you = format(deviation_you, ".2f")
+
+
+
+        fromdateInputValue = from_date_input.strftime('%Y-%m-%d')
+        todateInputValue = to_date_input.strftime('%Y-%m-%d')
+
+
+        html_content =  render(request, 'timesheet/time_sheet_breakdown_filtered_part.html', {
+            'paginated_time_entries' : paginated_time_entries,
+            'level':int(level),
+        })
+        html_content_p =  render(request, 'timesheet/pagination_part_after_filter.html', {
+            'items' : items,
+            'level':int(level),
+        })
+        print(paginated_time_entries)
+        return JsonResponse({
+            'fromdateInputValue' : from_date_input,
+            'todateInputValue' : to_date_input,
+            'html': html_content.content.decode('utf-8'),
+            'html_p': html_content_p.content.decode('utf-8'),
+            'total_timesheet_time':total_timesheet_time,
+            'total_time_available_you':total_time_available_you,
+            'total_time_logged_you':total_time_logged_you,
+            'deviation_you':deviation_you,
+            'has_deviation_you':has_deviation_you,
+        })
+    
+
+def apply_leave(request):
+    validate_user = role_required(request=request, permission_name="employee")
+    if isinstance(validate_user, JsonResponse):
+        return validate_user
+
+    user = get_current_user(request)
+    level = user.level()
+    operations1 = operations[str(level)]
+    
+    if request.method == 'POST':
+        form = LeaveRequestForm(request.POST)
+        if form.is_valid():
+            employee=user
+            date = form.cleaned_data['date']
+            leave_type = form.cleaned_data['leave_type']
+            leave_genre = form.cleaned_data['leave_genre']
+
+            # 1. Check for conflicts with existing leaves
+            conflict_exists = check_leave_conflicts(employee, date, leave_genre)
+            if conflict_exists:
+                messages.error(request, "You already have a conflicting leave on this date.")
+                return render(request, 'leave_form.html', {'form': form})
+
+            # 2. Check leave limits for restricted holiday, casual, and sick leaves
+            if leave_type in ['casual', 'sick', 'restricted']:
+                if not check_leave_balance(employee, leave_type, date, leave_genre):
+                    messages.error(request, f"You have exceeded the allowed {leave_type} leave quota for this period.")
+                    return render(request, 'leave_form.html', {'form': form})
+
+            # If validation passes, save the leave request
+            leave_request = form.save(commit=False)
+            leave_request.employee = employee
+            leave_request.status = 'pending'
+            leave_request.save()
+            return redirect('project_assignation_list')
+        else:
+            print(form.errors)
+            messages.error(request, "submitted form is invalid")
+    else:
+        form = LeaveRequestForm()
+    return render(request, 'Leaves/leave_form.html', {
+        'form': form,
+        'action':'Apply',
         'operations': operations1,
-        'level': level,
-        'active_title': 'Timesheet',
-        'page_paths': ['Timesheet', 'Timesheet Overview'],
+        'level':level,
+        'active_title':'Leave Apply',
+        'page_paths':['Leave','Leave Apply'],
+    })
+
+def leave_applications(request):
+    validate_user = role_required(request=request, permission_name="employee")
+    if isinstance(validate_user, JsonResponse):
+        return validate_user
+
+    user = get_current_user(request)
+    level = user.level()
+    operations1 = operations[str(level)]
+
+    # Fetch leave applications for the logged-in user
+    leave_requests = LeaveRequest.objects.filter(employee=user)
+
+    item_list = leave_requests  # Get all data
+    page_number = request.GET.get('page', 1)  # Get the page number
+    items_per_page = 50  # Number of items per page
+    paginator = Paginator(item_list, items_per_page)
+
+    try:
+        page_number = int(page_number)  # Ensure it's an integer
+        items = paginator.page(page_number)  # Get the requested page
+    except PageNotAnInteger:
+        items = paginator.page(1)  # Default to first page if not an integer
+    except EmptyPage:
+        items = paginator.page(paginator.num_pages)  # Get last page if out of range
+    print("Length after pagination : ",len(items))
+
+    # Convert to list if needed
+    paginated_items = list(items)
+
+    # Render the leave applications in a template
+    return render(request, 'Leaves/leave_applications.html', {
+        'leave_requests': paginated_items,
+        'items':items,
+        'operations': operations1,
+        'level':level,
+        'active_title':'Leave Applications',
+        'page_paths':['Leave','Leave Applications'],
     })

@@ -173,72 +173,82 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             body: formData
         })
-        .then(response => response.json()) // Parse the JSON response
+        .then(response => response.json())
         .then(data => {
-            console.log(data.html);
-            
-            // Update the main content and pagination
+            console.log("Full API Response:", data);
+        
+            if (!data.html || !data.html_p) {
+                console.error("Invalid response structure", data);
+                return;
+            }
+        
             document.getElementById('overview_table_data').innerHTML = data.html;
             document.getElementById('id_pagination_div').innerHTML = data.html_p;
         
-            // Get the overview_total_data from the JSON response
-            let overview_total_data = data.overview_total_data;
-            console.log("Received overview_total_data:", overview_total_data);
+            let { total_timesheet_time, total_time_available_you, total_time_logged_you, deviation_you, has_deviation_you } = data;
         
-            // Check if data is valid
-            if (!overview_total_data) {
-                console.error("overview_total_data is missing or undefined.");
+            console.log("Received overview_total_data:", total_timesheet_time);
+        
+            // Get Elements Safely
+            const total_timesheet_time_element = document.getElementById('total_timesheet_time');
+            const total_time_available_you_element = document.getElementById('total_time_available_you');
+            const total_time_logged_element = document.getElementById('total_time_logged_you');
+            const deviation_you_element = document.getElementById('deviation_you');
+        
+            if (!total_timesheet_time_element || !total_time_available_you_element || !total_time_logged_element || !deviation_you_element) {
+                console.error("One or more required elements are missing in the DOM.");
+                return;
+            }
+        
+            total_timesheet_time_element.innerHTML = total_timesheet_time ?? "0";
+            console.log("current value : ",total_timesheet_time_element.value," Needed value : ",total_timesheet_time);
+            
+            total_time_available_you_element.innerHTML = total_time_available_you ?? "0";
+            total_time_logged_element.innerHTML = total_time_logged_you ?? "0";
+            deviation_you_element.innerHTML = deviation_you ?? "0";
+        
+            let topElements = document.getElementsByClassName('boxes_value');
+            console.log("Length of the total data in the top box:", topElements.length);
+
+        
+            if (topElements.length >= 3) {
+                topElements[0].innerText = total_time_available_you !== undefined ? total_time_available_you : "N/A";
+                console.log("Top elemnt : ",topElements[0].innerText,"Needed value: ",total_time_available_you)
+                topElements[1].innerText = total_time_logged_you !== undefined ? total_time_logged_you : "N/A";
+                topElements[2].innerText = deviation_you !== undefined ? deviation_you : "N/A";
+        
+                if (has_deviation_you) {
+                    topElements[2].classList.add('deviation_color');
+                    deviation_you_element.classList.add('has-deviation');
+                    deviation_you_element.classList.remove('no-deviation');
+                } else {
+                    topElements[2].classList.remove('deviation_color');
+                    deviation_you_element.classList.remove('has-deviation');
+                    deviation_you_element.classList.add('no-deviation');
+                }
+        
+                console.log("Updated footer values:", total_timesheet_time, total_time_available_you, total_time_logged_you, deviation_you);
             } else {
-                let footerElements = document.getElementsByClassName('overview_table_footer_th');
-                console.log("Length of the total data in the table footer:", footerElements.length);
-        
-                if (footerElements.length >= 9) {
-                    footerElements[2].innerText = overview_total_data.total_project_hours !== undefined ? overview_total_data.total_project_hours : "N/A";
-                    footerElements[3].innerText = overview_total_data.total_bench_hours !== undefined ? overview_total_data.total_bench_hours : "N/A";
-                    footerElements[4].innerText = overview_total_data.total_leave_days !== undefined ? overview_total_data.total_leave_days : "N/A";
-                    footerElements[5].innerText = overview_total_data.total_training_hours !== undefined ? overview_total_data.total_training_hours : "N/A";
-                    footerElements[6].innerText = overview_total_data.total_learning_hours !== undefined ? overview_total_data.total_learning_hours : "N/A";
-                    footerElements[7].innerText = overview_total_data.total_total_hours !== undefined ? overview_total_data.total_total_hours : "N/A";
-                    footerElements[8].innerText = overview_total_data.total_deviation !== undefined ? overview_total_data.total_deviation : "N/A";
-
-                    if (overview_total_data.total_has_deviation) {
-                        footerElements[8].classList.add('has-deviation'); 
-                        footerElements[8].classList.remove('no-deviation'); 
-                    } else {
-                        footerElements[8].classList.remove('has-deviation'); 
-                        footerElements[8].classList.add('no-deviation'); 
-                    }
-        
-                    console.log("Updated footer values:", overview_total_data); // Debugging
-                } else {
-                    console.error("Not enough elements with class 'overview_table_footer_th' found.");
-                }
-                let topElements = document.getElementsByClassName('boxes_value');
-                console.log("Length of the total data in the top box:", topElements.length);
-                if (topElements.length >= 7) {
-                    topElements[0].innerText = overview_total_data.total_project_hours !== undefined ? overview_total_data.total_project_hours : "N/A";
-                    topElements[1].innerText = overview_total_data.total_bench_hours !== undefined ? overview_total_data.total_bench_hours : "N/A";
-                    topElements[2].innerText = overview_total_data.total_training_hours !== undefined ? overview_total_data.total_training_hours : "N/A";
-                    topElements[3].innerText = overview_total_data.total_learning_hours !== undefined ? overview_total_data.total_learning_hours : "N/A";
-                    topElements[4].innerText = overview_total_data.total_leave_days !== undefined ? overview_total_data.total_leave_days : "N/A";
-                    topElements[5].innerText = overview_total_data.total_total_hours !== undefined ? overview_total_data.total_total_hours : "N/A";
-                    topElements[6].innerText = overview_total_data.total_deviation !== undefined ? overview_total_data.total_deviation : "N/A";
-
-                    if (overview_total_data.total_has_deviation){
-                        topElements[6].classList.add('has-deviation-bg');
-                    }
-                    else{
-                        footerElements[6].classList.remove('has-deviation-bg');
-                    }
-                    console.log("Updated footer values:", overview_total_data); // Debugging
-                } else {
-                    console.error("Not enough elements with class 'boxes_value' found.");
-                }
+                console.error("Not enough elements with class 'boxes_value' found.");
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-        });        
+            console.error('Error fetching data:', error);
+        });
+                
 
     });
 });
+
+function gotosubmittimeentry() {
+    var button = document.getElementById('add_button');
+    var submitTimeEntryUrl = button.getAttribute('data-submitTimeEntry-url');
+    window.location.href = submitTimeEntryUrl;
+}
+
+
+function gotoupdatetimeentry() {
+    var button = document.getElementById('update_button');
+    var updateTimeEntryUrl = button.getAttribute('data-updateTimeEntry-url');
+    window.location.href = updateTimeEntryUrl;
+}

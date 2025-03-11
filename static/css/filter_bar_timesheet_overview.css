@@ -67,7 +67,7 @@
 }
 .filter_select_button_down {
     border: 1px solid gray;
-    border-radius: 8px;
+    border-radius: 4px;
     text-decoration: none;
     margin: 0px;
     width: 100%;
@@ -145,3 +145,4 @@
     text-align: center;
     box-sizing: border-box;
 }
+
