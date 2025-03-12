@@ -25,11 +25,11 @@
 # view-project-assignations-self - employee - level=3
 
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from django.utils.timezone import now
 
 from emp_portal_app.models import CASUAL_LEAVE_QUARTERLY_COUNT, RH_YEARLY_COUNT, SHIFT_HOURS_IN_A_DAY, SICK_LEAVE_QUARTERLY_COUNT, LeaveRequest
-
+from django.db.models import Q
 
 operations = {
     "1": {
@@ -59,7 +59,7 @@ operations = {
             "Employees under me":"employees_under_manager",
         },
         "Projects": {
-            "View Projects": ""
+            "View Projects": "project_list",
         },
         "Project Assignations": {
             "Create Project Assignation": "project_assignation_create",
@@ -174,10 +174,20 @@ def timesheeet_overview_data_extract(user,from_date_input,to_date_input,employee
         total_s = bench_s + training_s + learning_s + project_s
 
         emp_name = employee.name()
-        reporting_manager = employee.reporting_manager.name()
+        reporting_manager = employee.reporting_manager.name() if employee.reporting_manager else "Admin"
         project_hours = total_hours_decimal(project_h,project_m,project_s)
         bench_hours = total_hours_decimal(bench_h,bench_m,bench_s)
+        
         leave_days = 0
+        leaves = LeaveRequest.objects.filter(
+            employee=employee,
+            date__range=(from_date_input, to_date_input),
+        )
+        total_leave_days = 0
+        for leave in leaves:
+            total_leave_days += get_leave_value(leave.leave_genre)  # Add full day or half-day values
+        leave_days=total_leave_days
+
         training_hours = total_hours_decimal(training_h,training_m,training_s)
         learning_hours = total_hours_decimal(learning_h,learning_m,learning_s)
         total_hours = total_hours_decimal(total_h,total_m,total_s)
@@ -251,7 +261,7 @@ def get_the_break_down_total_data(time_entries,user,from_date_input,to_date_inpu
         total_h+=time_entry.hours
         total_m+=time_entry.minutes
         total_s+=time_entry.seconds
-    user_time_entries = time_entries
+    user_time_entries = [item for item in time_entries if item.employee.employee_id == user.employee_id]
     for time_entry in user_time_entries :
         u_total_h+=time_entry.hours
         u_total_m+=time_entry.minutes
@@ -306,7 +316,7 @@ def check_leave_balance(employee, leave_type, leave_date, leave_genre):
     if leave_type == 'restricted':
         # Get total restricted holidays used this year
         used_days = LeaveRequest.objects.filter(
-            employee=employee, leave_type='restricted', date__year=current_year, status='approved'
+            employee=employee, leave_type='restricted', date__year=current_year,
         ).count()
 
         return used_days < RH_YEARLY_COUNT  # Ensure they haven't exceeded RH limit
@@ -349,7 +359,6 @@ def get_used_leave_days(employee, leave_type, start_date, end_date):
         employee=employee,
         leave_type=leave_type,
         date__range=(start_date, end_date),
-        status='approved'
     )
 
     total_days = 0
@@ -367,3 +376,152 @@ def get_leave_value(leave_genre):
     elif leave_genre in ['first_half', 'second_half']:
         return 0.5
     return 0  # Default case
+
+def get_remaining_leave_data(employee):
+    current_date = date.today()
+    casual={
+        "total": 0,
+        "used": 0,
+        "available": 0
+    }
+    sick={
+        "total": 0,
+        "used": 0,
+        "available": 0
+    }
+    restricted={
+        "total": 0,
+        "used": 0,
+        "available": 0
+    }
+    casual["total"] = CASUAL_LEAVE_QUARTERLY_COUNT * get_count(get_quarter(current_date)["quarter"])
+    sick["total"] = SICK_LEAVE_QUARTERLY_COUNT  * get_count(get_quarter(current_date)["quarter"])
+    restricted["total"] = RH_YEARLY_COUNT
+    quarter_data = get_quarter(current_date)
+    for quarter in get_quarters_till_now(quarter["quarter"]):
+        data = get_quarter_data(current_date.year)
+        casual_used_for_this_quarter = get_used_leave_days(employee, "casual", quarter_data["quarter"]["quarter_start"], quarter_data["quarter"]["quarter_start"])
+        casual["used"]+=casual_used_for_this_quarter
+        sick_used_for_this_quarter = get_used_leave_days(employee, "sick", quarter_data["quarter"]["quarter_start"], quarter_data["quarter"]["quarter_start"])
+        sick["used"]+=sick_used_for_this_quarter
+    
+    year = current_date.year
+    rh_leaves = LeaveRequest.objects.filter(
+        employee=employee,
+        leave_type="restricted",
+        date__range=(datetime(year, 1, 1), datetime(year, 12, 31)),
+    )
+    rh_used_days = 0
+    for leave in rh_leaves:
+        rh_used_days += get_leave_value(leave.leave_genre)
+    restricted["used"] = rh_used_days
+
+    casual["available"] = casual["total"] - casual["used"]
+    sick["available"] = sick["total"] - sick["used"]
+    restricted["available"] = restricted["total"] - restricted["used"]
+
+    return {
+        "casual":casual,
+        "sick":sick,
+        "restricted":restricted,
+    }
+
+def get_quarter_data(year):
+    quarter_data = {
+        "first":{
+        "quarter": "first",
+        "quarter_start":datetime(year, 1, 1),
+        "quarter_end":datetime(year, 3, 31),
+        },
+        "second":{
+        "quarter": "second",
+        "quarter_start":datetime(year, 4, 1),
+        "quarter_end":datetime(year, 6, 30),
+        },
+        "third":{
+        "quarter": "third",
+        "quarter_start":datetime(year, 7, 1),
+        "quarter_end":datetime(year, 9, 30),
+        },
+        "fourth":{
+        "quarter": "fourth",
+        "quarter_start":datetime(year, 10, 1),
+        "quarter_end":datetime(year, 12, 31),
+        }
+    }
+    return quarter_data
+   
+def get_quarter(date):
+    data = get_quarter_data(date.year)
+    month = date.month
+    if month in [1, 2, 3]:
+        return data["first"]
+    elif month in [4, 5, 6]:
+        return data["second"]
+    elif month in [7, 8, 9]:
+        return data["third"]
+    else:
+        return data["fourth"]
+
+def get_quarters_till_now(quarter):
+    if quarter == "first":
+        return ["first"]
+    elif  quarter == "second":
+        return ["first","second"]
+    elif  quarter == "third":
+        return ["first","second","third"]
+    elif  quarter == "fourth":
+        return ["first","second","third","fourth"]
+    else:
+        return ["first"]
+    
+def get_count(quarter):
+    if quarter == "first":
+        return 1
+    elif  quarter == "second":
+        return 2
+    elif  quarter == "third":
+        return 3
+    elif  quarter == "fourth":
+        return 4
+    else:
+        return 1
+    
+
+def get_dates():
+    today = date.today()
+    start_of_week = today - timedelta(days=today.weekday()) 
+    current_date = today
+
+    start_of_last_week = start_of_week - timedelta(weeks=1)
+    end_of_last_week = start_of_last_week + timedelta(days=6)
+
+    first_date_current_month = today.replace(day=1)  
+    current_date_current_month = today
+
+    if today.month == 1:
+        first_date_last_month = today.replace(year=today.year - 1, month=12, day=1)
+    else:
+        first_date_last_month = today.replace(month=today.month - 1, day=1)
+    
+    last_day_last_month = first_date_last_month.replace(day=28) + timedelta(days=4) 
+    last_day_last_month = last_day_last_month - timedelta(days=last_day_last_month.day)
+
+    return {
+        "current_week": {
+            "first_date": start_of_week,
+            "current_date": current_date,
+        },
+        "last_week": {
+            "first_date": start_of_last_week,
+            "last_date": end_of_last_week,
+        },
+        "current_month": {
+            "first_date": first_date_current_month,
+            "current_date": current_date_current_month,
+        },
+        "last_month": {
+            "first_date": first_date_last_month,
+            "last_date": last_day_last_month,
+        },
+    }

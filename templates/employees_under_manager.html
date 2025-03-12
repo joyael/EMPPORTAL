@@ -8,7 +8,7 @@
 
     {% include 'main_linkings.html' %}
     
-    <link rel="stylesheet" href="{% static 'css/employees_view.css' %}">
+    <link rel="stylesheet" href="{% static 'css/employees_list.css' %}">
 </head>
 <body>
 
@@ -27,6 +27,7 @@
                         <th>First Name</th>
                         <th>Last Name</th>
                         <th>Email</th>
+                        <th>Position</th>
                         <th>Phone</th>
                         <th>Status</th>
                     </tr>
@@ -38,6 +39,7 @@
                             <td>{{ employee.first_name }}</td>
                             <td>{{ employee.last_name }}</td>
                             <td>{{ employee.email }}</td>
+                            <td>{{ employee.position_name }}</td>
                             <td>{{ employee.phone }}</td>
                             <td>{{ employee.get_status_display }}</td>
                         </tr>
@@ -48,7 +50,6 @@
             <p>No employees found under this manager.</p>
         {% endif %}
 
-        <a href="{% url 'employee_list' %}">Back to Employee List</a>
     </div>
     </div>
     </div>

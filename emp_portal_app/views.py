@@ -15,7 +15,7 @@ import jwt
 from EMPPORTAL import settings
 from emp_portal_app.auth import get_current_user, role_required
 from emp_portal_app.models import SHIFT_HOURS_IN_A_DAY
-from .operations_by_role import check_leave_balance, check_leave_conflicts, get_the_break_down_total_data, get_the_overview_total_data, operations,timesheeet_overview_data_extract
+from .operations_by_role import check_leave_balance, check_leave_conflicts, get_dates, get_the_break_down_total_data, get_the_overview_total_data, operations,timesheeet_overview_data_extract
 
 from .forms import *
 from .utils import create_access_token,check_refresh_token,create_refresh_token,insert_refresh_token, is_refresh_token_active, make_refresh_token_inactive
@@ -298,15 +298,76 @@ def login(request):
 
 
 def home(request):
-    validate_user = role_required(request=request,permission_name="employee")
+    validate_user = role_required(request=request, permission_name="employee")
     if isinstance(validate_user, JsonResponse):
         return validate_user
+
     user = get_current_user(request)
     level = user.role
     operations1 = operations[level]
-    return render(request, 'home.html', {'operations': operations1, 'level':int(level),'active_title':'Home'})
+    dates = get_dates()
 
+    def get_time_period_data(from_date, to_date):
+        time_entries = Timesheet.objects.filter(date__range=[from_date, to_date])
+        overview_data = timesheeet_overview_data_extract(user, from_date, to_date, [user], time_entries)
+        
+        if not overview_data["the_timesheet_overview_data"]:
+            return {
+                "logged_hours": 0,
+                "total_hours": 0,
+                "project_hours": 0,
+                "bench_hours": 0,
+                "training_hours": 0,
+                "learning_hours": 0,
+                "leave_days": 0,
+                "deviation": 0,
+                "has_deviation": False,
+            }
+        
+        data = overview_data["the_timesheet_overview_data"][0]
+        return {
+            "logged_hours": data.get("total_hours", 0),
+            "total_hours": overview_data.get("minimum_working_hours", 0),
+            "project_hours": data.get("project_hours", 0),
+            "bench_hours": data.get("bench_hours", 0),
+            "training_hours": data.get("training_hours", 0),
+            "learning_hours": data.get("learning_hours", 0),
+            "leave_days": data.get("leave_days", 0),
+            "deviation": data.get("deviation", 0),
+            "has_deviation": data.get("has_deviation", False),
+        }
 
+    # Current week
+    current_week_data = get_time_period_data(dates["current_week"]["first_date"], dates["current_week"]["current_date"])
+    
+    # Last week
+    last_week_data = get_time_period_data(dates["last_week"]["first_date"], dates["last_week"]["last_date"])
+    
+    # Current month
+    current_month_data = get_time_period_data(dates["current_month"]["first_date"], dates["current_month"]["current_date"])
+    
+    # Last month
+    last_month_data = get_time_period_data(dates["last_month"]["first_date"], dates["last_month"]["last_date"])
+
+    print(current_week_data)
+    return render(request, 'home.html', {
+        'current_week_data': current_week_data,
+        'last_week_data': last_week_data,
+        'current_month_data': current_month_data,
+        'last_month_data': last_month_data,
+        'operations': operations1, 
+        'level': int(level),
+        'active_title': 'Home',
+        'page_paths': ['Home',],
+    })
+
+def getname(request):
+    validate_user = role_required(request=request,permission_name="manager")
+    if isinstance(validate_user, JsonResponse):
+        return validate_user
+    user = get_current_user(request)
+    name = user.name() + " (" + user.get_role_display() + ")"
+    return JsonResponse({'name': name})
 
 def project_list(request):
     validate_user = role_required(request=request,permission_name="manager")

@@ -7,9 +7,94 @@
     {% load static %}
 
     {% include 'main_linkings.html' %}
+
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+
 </head>
 <body>
+    
     {% include 'header.html' %}
+    <div class="outer_main">
+    <h1 class="center_heading">
+        Employee Dashboard
+    </h1>
+
+    <table id="tbl-dashboard" class="tbl-dashboard text-xs">
+        <thead>
+            <tr>
+                <th class="text-center p-3"></th>
+                <th class="bg-gray-200 text-center p-3">Logged Hours</th>
+                <th class="bg-gray-200 text-center p-3">Project Hours</th>
+                <th class="bg-gray-200 text-center p-3">Bench Hours</th>
+                <th class="bg-gray-200 text-center p-3">Training Hours</th>
+                <th class="bg-gray-200 text-center p-3">Learning Hours</th>
+                <th class="bg-gray-200 text-center p-3">Leave Days</th>
+                <th class="bg-gray-200 text-center p-3">Deviation</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="bg-gray-200 p-3">This Week</td>
+                <td class="bg-gray-200 text-center p-3">
+                    <p class="dashboard-content" id="lh-tw">{{ current_week_data.logged_hours }}/{{ current_week_data.total_hours }}</p>
+                </td>
+                <td class="bg-gray-200 text-center p-3"><p class="dashboard-content" id="ph-tw">{{ current_week_data.project_hours }}</p></td>
+                <td class="bg-gray-200 text-center p-3"><p class="dashboard-content" id="bh-tw">{{ current_week_data.bench_hours }}</p></td>
+                <td class="bg-gray-200 text-center p-3"><p class="dashboard-content" id="th-tw">{{ current_week_data.training_hours }}</p></td>
+                <td class="bg-gray-200 text-center p-3"><p class="dashboard-content" id="lr-tw">{{ current_week_data.learning_hours }}</p></td>
+                <td class="bg-gray-200 text-center p-3"><p class="dashboard-content" id="ld-tw">{{ current_week_data.leave_days }}</p></td>
+                <td class="bg-gray-200 text-center p-3">
+                    <p class="dashboard-content {% if current_week_data.has_deviation %} has-deviation {% else %} has-no-deviation {% endif %}" id="dv-tw">
+                        {{ current_week_data.deviation }}
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <td class="bg-gray-200 p-3">Last Week</td>
+                <td class="bg-gray-200 text-center p-3"><p class="dashboard-content" id="lh-lw">{{ last_week_data.logged_hours }}/{{ last_week_data.total_hours }}</p></td>
+                <td class="bg-gray-200 text-center p-3"><p class="dashboard-content" id="ph-lw">{{ last_week_data.project_hours }}</p></td>
+                <td class="bg-gray-200 text-center p-3"><p class="dashboard-content" id="bh-lw">{{ last_week_data.bench_hours }}</p></td>
+                <td class="bg-gray-200 text-center p-3"><p class="dashboard-content" id="th-lw">{{ last_week_data.training_hours }}</p></td>
+                <td class="bg-gray-200 text-center p-3"><p class="dashboard-content" id="lr-lw">{{ last_week_data.learning_hours }}</p></td>
+                <td class="bg-gray-200 text-center p-3"><p class="dashboard-content" id="ld-lw">{{ last_week_data.leave_days }}</p></td>
+                <td class="bg-gray-200 text-center p-3">
+                    <p class="dashboard-content {% if last_week_data.has_deviation %} has-deviation {% else %} has-no-deviation {% endif %}" id="dv-lw">
+                        {{ last_week_data.deviation }}
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <td class="bg-gray-200 p-3">This Month</td>
+                <td class="bg-gray-200 text-center p-3"><p class="dashboard-content" id="lh-tm">{{ current_month_data.logged_hours }}/{{ current_month_data.total_hours }}</p></td>
+                <td class="bg-gray-200 text-center p-3"><p class="dashboard-content" id="ph-tm">{{ current_month_data.project_hours }}</p></td>
+                <td class="bg-gray-200 text-center p-3"><p class="dashboard-content" id="bh-tm">{{ current_month_data.bench_hours }}</p></td>
+                <td class="bg-gray-200 text-center p-3"><p class="dashboard-content" id="th-tm">{{ current_month_data.training_hours }}</p></td>
+                <td class="bg-gray-200 text-center p-3"><p class="dashboard-content" id="lr-tm">{{ current_month_data.learning_hours }}</p></td>
+                <td class="bg-gray-200 text-center p-3"><p class="dashboard-content" id="ld-tm">{{ current_month_data.leave_days }}</p></td>
+                <td class="bg-gray-200 text-center p-3">
+                    <p class="dashboard-content {% if current_month_data.has_deviation %} has-deviation {% else %} has-no-deviation {% endif %}" id="dv-tm">
+                        {{ current_month_data.deviation }}
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <td class="bg-gray-200 p-3">Last Month</td>
+                <td class="bg-gray-200 text-center p-3"><p class="dashboard-content" id="lh-lm">{{ last_month_data.logged_hours }}/{{ last_month_data.total_hours }}</p></td>
+                <td class="bg-gray-200 text-center p-3"><p class="dashboard-content" id="ph-lm">{{ last_month_data.project_hours }}</p></td>
+                <td class="bg-gray-200 text-center p-3"><p class="dashboard-content" id="bh-lm">{{ last_month_data.bench_hours }}</p></td>
+                <td class="bg-gray-200 text-center p-3"><p class="dashboard-content" id="th-lm">{{ last_month_data.training_hours }}</p></td>
+                <td class="bg-gray-200 text-center p-3"><p class="dashboard-content" id="lr-lm">{{ last_month_data.learning_hours }}</p></td>
+                <td class="bg-gray-200 text-center p-3"><p class="dashboard-content" id="ld-lm">{{ last_month_data.leave_days }}</p></td>
+                <td class="bg-gray-200 text-center p-3">
+                    <p class="dashboard-content {% if last_month_data.has_deviation %} has-deviation {% else %} has-no-deviation {% endif %}" id="dv-lm">
+                        {{ last_month_data.deviation }}
+                    </p>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div>
 
     {% include 'footer.html' %}
 </body>

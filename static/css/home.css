@@ -1,0 +1,58 @@
+.center_heading {
+    color: rgb(17 24 39 );
+    font-weight: 500; /* .font-medium */
+    font-size: 1.25rem; /* .text-xl */
+    line-height: 1.75rem; /* .text-xl */
+    text-align: center; /* .text-center */
+    padding-top: .5rem; /* .py-2 */
+    padding-bottom: .5rem; /* .py-2 */
+    margin-top: 1rem; /* .mt-4 */
+    margin-bottom: .75rem; /* .mb-3 */
+  }
+
+  .tbl-dashboard {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  .text-xs {
+    font-size: .75rem;
+    line-height: 1rem;
+  }
+  table {
+    text-indent: 0;
+    border-color: inherit;
+    border-collapse: collapse;
+  }
+
+  .tbl-dashboard th, .tbl-dashboard td {
+    padding: 20px;
+    border: 15px solid #fff;
+  }
+  .text-center {
+    text-align: center;
+  }
+  .p-3 {
+    padding: .75rem;
+  }
+  .bg-gray-200 {
+    background-color: rgb(229 231 235);
+  }
+
+  .dashboard-content {
+    font-size: 18px;
+  }
+
+  .outer_main{
+    padding-left: 30px;
+    padding-right: 30px;
+  }
+  .dashboard-content{
+    margin: 0px;
+  }
+  .has-deviation{
+    color:red;
+  }
+
+  .has-no-deviation{
+    color: green;
+  }

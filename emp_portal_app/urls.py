@@ -39,6 +39,7 @@ urlpatterns = [
     
     path('profile_picture', profile_picture, name='profile_picture'),
     path('profile_view', profile_view, name='profile_view'),
+    path('getname',getname, name='getname'),
 
     path('timesheet/create/', submit_time_entry, name='submit_time_entry'),
     path('timesheet/timesheet_overview', timesheet_overview, name='timesheet_overview'),

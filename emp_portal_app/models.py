@@ -106,6 +106,8 @@ class Employee(models.Model):
         return f"{self.first_name} {self.last_name}"
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+    def position_name(self):
+        return self.get_position_display()
 
     class Meta:
         db_table = 'employees'
