@@ -91,3 +91,28 @@
     margin:0px;
     padding:0px;
 }
+
+
+.form_errors_div {
+    background-color: #f8d7da; 
+    color: #721c24; 
+    border: 1px solid #f5c6cb; 
+    border-radius: 5px; 
+    padding: 15px; 
+    margin: 20px 0; 
+    font-family: Arial, sans-serif; 
+}
+
+.form_errors_div strong {
+    display: block;
+    margin-bottom: 10px; 
+}
+
+.form_errors_div ul {
+    list-style-type: none; 
+    padding-left: 0; 
+}
+
+.form_errors_div li {
+    margin-bottom: 5px;
+}

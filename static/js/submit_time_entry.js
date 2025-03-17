@@ -4,7 +4,14 @@ function gotohome() {
     window.location.href = homeUrl;
 }
 
+
+    
+
+
 document.addEventListener("DOMContentLoaded", function () {
+
+    const dateInputS = document.getElementById('id_date');
+    dateInputS.value = '';
 
     let taskIdP = document.querySelector('p:has(#id_task_id)');
 
@@ -48,6 +55,90 @@ document.addEventListener("DOMContentLoaded", function () {
         timeContainer.appendChild(minutesP);
         timeContainer.appendChild(secondsP);
     }
+
+    const dateInput = document.getElementById('id_date');
+    const errorMessage = document.getElementById('errorbox');
+
+    const today = new Date();
+    const formattedDate = today.toISOString().split('T')[0]; // Format date as YYYY-MM-DD
+    dateInput.setAttribute('max', formattedDate);
+
+    // dateInput.addEventListener('change', function() {
+    //     const selectedDate = new Date(dateInput.value);
+    //     today.setHours(0, 0, 0, 0); 
+
+    //     if (selectedDate > today) {
+    //         errorMessage.textContent = "The date cannot be in the future.";
+    //         errorMessage.style.display = 'block';
+    //         dateInput.setCustomValidity("The date cannot be in the future."); // Set custom validity
+    //     } else {
+    //         errorMessage.style.display = 'none'; // Hide error message
+    //         dateInput.setCustomValidity(""); // Clear custom validity
+    //     }
+    // });
+
+    const projectSelect = document.getElementById('id_project');
+    const time_entry_form = document.getElementById('employeeForm');
+    const fetchProjectsUrl = time_entry_form.getAttribute('data-fetchProjects-url');
+
+    function fetchProjects() {
+        console.log("date changed");
+        const selectedDate = dateInput.value;
+        if (!selectedDate) {
+            return; // Exit if no date is selected
+        }
+        const data = new FormData();
+        data.append('date', selectedDate);
+
+        fetch(fetchProjectsUrl, { // Replace with your actual URL
+            method: 'POST',
+            body: data,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest', // To indicate that this is an AJAX request
+                'X-CSRFToken': getCookie('csrftoken') // Include CSRF token if required
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Clear existing options
+            projectSelect.innerHTML = '';
+
+            // Check if there are project choices
+            if (data.project_choices) {
+                // Populate the select element with new options
+                data.project_choices.forEach(choice => {
+                    const option = document.createElement('option');
+                    option.value = choice[0]; // The value of the option
+                    option.textContent = choice[1]; // The display text of the option
+                    projectSelect.appendChild(option);
+                });
+            } else {
+                console.error('No project choices received:', data);
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching project choices:', error);
+        });
+    }
+
+    dateInput.addEventListener('change', fetchProjects);
+
+    // Function to get CSRF token (if needed)
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Check if this cookie string begins with the name we want
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
 });
 
 
@@ -68,3 +159,6 @@ document.getElementById('employeeForm').addEventListener('submit', function(even
         descriptionInput.focus(); // Set focus back to the description input
     }
 });
+
+
+    

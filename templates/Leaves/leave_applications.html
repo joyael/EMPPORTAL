@@ -33,13 +33,13 @@
                         {% for request in leave_requests %}
                         <tr class="overview_table_tr">
                             <td class="overview_table_td">
-                                <b>{{ request.leave_type }}</b>
+                                <b>{{ request.get_leave_type_display }}</b>
                             </td>
                             <td class="overview_table_td">
                                 {{ request.date }}
                             </td>
                             <td class="overview_table_td text-right">
-                                {{ request.leave_genre }}
+                                {{ request.get_leave_genre_display }}
                             </td>
                             <td class="overview_table_td text-right">
                                 {{ request.status }}

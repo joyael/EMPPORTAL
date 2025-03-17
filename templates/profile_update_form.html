@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    {% load static %}
+
+    {% include 'main_linkings.html' %}
+
+    <link rel="stylesheet" href="{% static 'css/profile_update_form.css' %}">
+    <script src="{% static 'js/profile_update_form.js' %}"></script>
+
+</head>
+<body>
+    
+    {% include 'header.html' %}
+    <div class="zestful-profile-edit-container">
+        <form class="zestful-profile-edit-form">
+            <!-- <div class="zestful-form-row">
+                <label for="zestful-username" class="zestful-form-label">Username:</label>
+                <input type="text" id="zestful-username" class="zestful-form-input" value="user123" readonly>
+            </div>
+            <div class="zestful-form-row">
+                <label for="zestful-email" class="zestful-form-label">Email:</label>
+                <input type="email" id="zestful-email" class="zestful-form-input" value="user@example.com" readonly>
+            </div>
+            <div class="zestful-form-row">
+                <label for="zestful-name" class="zestful-form-label">Full Name:</label>
+                <input type="text" id="zestful-name" class="zestful-form-input" value="John Doe">
+            </div>
+            <div class="zestful-form-row">
+                <label for="zestful-bio" class="zestful-form-label">Bio:</label>
+                <textarea id="zestful-bio" class="zestful-form-input">A short bio about me.</textarea>
+            </div>
+            <div class="zestful-form-row">
+                <label for="zestful-location" class="zestful-form-label">Location:</label>
+                <input type="text" id="zestful-location" class="zestful-form-input" value="City, Country">
+            </div>
+            <div class="zestful-form-row">
+                <button type="submit" class="zestful-submit-button">Update Profile</button>
+            </div> -->
+            {% csrf_token %}
+            {{ form.as_p }}
+
+            
+
+            <input id="value_reporting_manager" value="{{ reporting_manager_name }}" hidden>
+            <input id="value_role" value="{{ role_name }}" hidden>
+            <input id="value_department" value="{{ department_name }}" hidden>
+            <input id="value_position" value="{{ position_name }}" hidden>
+
+
+            <div class="buttons-div">
+                <button type="submit" class="mybutton">{{ action }}</button>
+                <button type="button" class="mybutton" onclick="gotoprofileview()" data-profileview-url="{% url 'profile_view' %}" id="cancel_button">Cancel</button>
+            </div>
+
+        </form>
+        
+    </div>
+
+    {% include 'footer.html' %}
+
+</body>
+</html>

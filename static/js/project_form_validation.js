@@ -5,8 +5,8 @@ function gotocreateproject() {
 }
 function gotoprojectlist() {
     const button = document.getElementById('cancel_button');
-    const projectListUrl = button.getAttribute('data-projadd-url');
-    window.location.href = projectAddUrl;
+    const projectListUrl = button.getAttribute('data-projectlist-url');
+    window.location.href = projectListUrl;
 }
 
 document.addEventListener('DOMContentLoaded', function() {

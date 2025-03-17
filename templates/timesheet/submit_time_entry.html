@@ -20,7 +20,7 @@
             <div class="title-box">{{ action }} Time Entry </div>
 
         <div id="errorbox"></div>
-        <form method="post" id="employeeForm">
+        <form method="post" id="employeeForm" data-fetchProjects-url="{% url 'get_projects' %}">
             {% csrf_token %}
             {{ form.as_p }}
 

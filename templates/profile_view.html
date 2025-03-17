@@ -30,7 +30,7 @@
     
             <div class="profile_main_div_inner">
                 <div class="edit_profile_div">
-                    <button class="edit_profile_button">
+                    <button class="edit_profile_button" onclick="window.location.href='{% url 'profile_update' %}'">
                         Edit Profile
                     </button>
                 </div>
@@ -126,19 +126,20 @@
             </div>
 
     
-            <form class="profile_main_div_inner pad-0">
+            <form class="profile_main_div_inner pad-0" action="{% url 'password_update' %}" method="POST">
+                {% csrf_token %}
                 <div class="password_update_box">
                     <div class="bellingham">
                         <label class="vini">Current Password</label>
-                        <input class="mbappe">
+                        <input class="mbappe" id="c_password" name="c_password">
                     </div>
                     <div class="bellingham">
                         <label class="vini">New Password</label>
-                        <input class="mbappe">
+                        <input class="mbappe" id="n_password" name="n_password">
                     </div>
                     <div class="bellingham">
                         <label class="vini">Confirm Password</label>
-                        <input class="mbappe">
+                        <input class="mbappe" id="c_n_password" name="c_n_password">
                     </div>
                 </div>
                 <div class="password_save_div">

@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.hashers import make_password
 from datetime import datetime
 
+from django.db.models import UniqueConstraint
+
 #Create your models here.
 
 class RefreshToken(models.Model):
@@ -94,6 +96,7 @@ class Employee(models.Model):
         choices= EMPLOYEE_STATUS_CHOICES,
         default='active',
     )
+    last_updated = models.DateTimeField(auto_now_add=True,null=True,blank=True)
 
     def save(self, *args, **kwargs):
         if not self.password_hash.startswith('pbkdf2_sha256$'):
@@ -227,3 +230,56 @@ class LeaveRequest(models.Model):
 
     def __str__(self):
         return f"{self.employee} - {self.leave_type} on {self.date} ({self.status})"
+
+
+def default_working_days():
+    return ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+
+class Shift(models.Model):
+    name = models.CharField(max_length=50, default="General Shift")
+    start_time = models.TimeField(default="03:30:00") 
+    end_time = models.TimeField(default="12:30:00")
+    total_hours = models.FloatField(default=8.0)
+    working_days = models.JSONField(default=default_working_days)
+
+    def __str__(self):
+        return self.name
+
+
+class Attendance(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    date = models.DateField(auto_now_add=True)
+    first_check_in = models.DateTimeField(null=True, blank=True)
+    last_check_out = models.DateTimeField(null=True, blank=True)
+    total_worked_hours = models.FloatField(default=0.0)
+
+    ATTENDANCE_CHOICES = [
+        ('first_half_present', 'First Half Present'),
+        ('second_half_present', 'Second Half Present'),
+        ('full_day_present', 'Full Day Present'),
+        ('absent', 'Absent'),
+    ]
+
+    attendance_status = models.CharField(
+        max_length=20,
+        choices=ATTENDANCE_CHOICES,
+        default='absent',
+    )
+    class Meta:
+        constraints = [
+            UniqueConstraint(fields=['employee', 'date'], name='unique_employee_date')
+        ]
+        verbose_name = 'Attendance'
+        verbose_name_plural = 'Attendances'
+
+    def __str__(self):
+        return f"{self.employee.user.username} - {self.date} - {self.attendance_status}"
+
+class CheckInOut(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    is_check_in = models.BooleanField(default=True)  # True for check-in, False for check-out
+
+    def __str__(self):
+        status = "Check-In" if self.is_check_in else "Check-Out"
+        return f"{self.employee.user.username} - {status} at {self.timestamp}"

@@ -9,19 +9,22 @@ from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import jwt
 
-
-
+from django.db.models import Q
 
 from EMPPORTAL import settings
 from emp_portal_app.auth import get_current_user, role_required
-from emp_portal_app.models import SHIFT_HOURS_IN_A_DAY
-from .operations_by_role import check_leave_balance, check_leave_conflicts, get_dates, get_the_break_down_total_data, get_the_overview_total_data, operations,timesheeet_overview_data_extract
+from emp_portal_app.models import SHIFT_HOURS_IN_A_DAY, CheckInOut
+from .helper_functions import calculate_attendance, check_leave_balance, check_leave_conflicts, get_dates, get_remaining_leave_data, get_the_break_down_total_data, get_the_overview_total_data, is_user_checked_in, timesheeet_overview_data_extract
+from .operations_by_role import operations
 
 from .forms import *
-from .utils import create_access_token,check_refresh_token,create_refresh_token,insert_refresh_token, is_refresh_token_active, make_refresh_token_inactive
+from .utils import create_access_token, check_refresh_token, create_refresh_token, insert_refresh_token, is_refresh_token_active, make_refresh_token_inactive
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
+from django.contrib.auth import authenticate, login as session_login
+
+from django.contrib.auth.hashers import make_password
 
 from django.contrib.sessions.models import Session
 import json
@@ -32,6 +35,7 @@ from allauth.socialaccount.models import SocialAccount
 from datetime import datetime, timedelta
 from django.utils.timezone import now
 from emp_portal_app.models import CASUAL_LEAVE_QUARTERLY_COUNT, RH_YEARLY_COUNT, SHIFT_HOURS_IN_A_DAY, SICK_LEAVE_QUARTERLY_COUNT
+
 
 
 # Create your views here.
@@ -268,6 +272,7 @@ def login(request):
     if request.method == 'POST':
         email = request.POST.get('email')  #Get the email from the POST data
         password = request.POST.get('password_hash')  #Get the password from the POST data
+
         
         # Check if the user exists
         user = Employee.objects.filter(email=email).first()
@@ -289,6 +294,7 @@ def login(request):
         insert_refresh_token(refresh_token)
 
         messages.success(request, "Login Successful!")
+        
         response = redirect('home')
         response.set_cookie('access_token', access_token, httponly=True, secure=True)
         response.set_cookie('refresh_token', refresh_token, httponly=True, secure=True)
@@ -362,7 +368,7 @@ def home(request):
     })
 
 def getname(request):
-    validate_user = role_required(request=request,permission_name="manager")
+    validate_user = role_required(request=request,permission_name="employee")
     if isinstance(validate_user, JsonResponse):
         return validate_user
     user = get_current_user(request)
@@ -636,6 +642,7 @@ def profile_view(request):
     operations1 = operations[str(level)]
 
     sessions = Session.objects.filter(expire_date__gte=timezone.now())  # Active sessions
+    print(len(sessions))
     user_sessions = []
     for session in sessions:
         data = session.get_decoded()
@@ -647,7 +654,7 @@ def profile_view(request):
                 'device': data.get('device', 'Unknown Device'),
                 'last_activity': session.expire_date
             })
-
+    
     return render(request, 'profile_view.html', {
         'user':user,
         'operations': operations1, 
@@ -1154,32 +1161,36 @@ def apply_leave(request):
             date = form.cleaned_data['date']
             leave_type = form.cleaned_data['leave_type']
             leave_genre = form.cleaned_data['leave_genre']
+            validation_passed = True
 
             # 1. Check for conflicts with existing leaves
             conflict_exists = check_leave_conflicts(employee, date, leave_genre)
             if conflict_exists:
                 messages.error(request, "You already have a conflicting leave on this date.")
-                return render(request, 'leave_form.html', {'form': form})
+                validation_passed = False
 
             # 2. Check leave limits for restricted holiday, casual, and sick leaves
             if leave_type in ['casual', 'sick', 'restricted']:
                 if not check_leave_balance(employee, leave_type, date, leave_genre):
                     messages.error(request, f"You have exceeded the allowed {leave_type} leave quota for this period.")
-                    return render(request, 'leave_form.html', {'form': form})
+                    validation_passed = False
 
             # If validation passes, save the leave request
-            leave_request = form.save(commit=False)
-            leave_request.employee = employee
-            leave_request.status = 'pending'
-            leave_request.save()
-            return redirect('project_assignation_list')
+            if validation_passed:
+                leave_request = form.save(commit=False)
+                leave_request.employee = employee
+                leave_request.status = 'pending'
+                leave_request.save()
+                return redirect('leave_applications')
         else:
             print(form.errors)
             messages.error(request, "submitted form is invalid")
     else:
         form = LeaveRequestForm()
+    remaining_leave_data = get_remaining_leave_data(user)
     return render(request, 'Leaves/leave_form.html', {
         'form': form,
+        'remaining_leave_data':remaining_leave_data,
         'action':'Apply',
         'operations': operations1,
         'level':level,
@@ -1224,4 +1235,164 @@ def leave_applications(request):
         'level':level,
         'active_title':'Leave Applications',
         'page_paths':['Leave','Leave Applications'],
+    })
+
+
+def get_projects(request):
+    validate_user = role_required(request=request, permission_name="employee")
+    if isinstance(validate_user, JsonResponse):
+        return validate_user
+
+    user = get_current_user(request)
+    if request.method == "POST":
+        date = request.POST["date"]
+        if not date:
+            return JsonResponse({"error": "Date is required"})
+        try:
+            selected_date = datetime.strptime(date, '%Y-%m-%d').date()
+        except ValueError:
+            return JsonResponse({"error": "Invalid date format"}, status=400)
+        custom_projects = [
+            ('bench', 'Bench'),
+            ('training', 'Training'),
+            ('learning', 'Learning'),
+        ]
+        project_choices = []    
+        if user.level() <= 1:
+            project_choices = []
+            projects = Project.objects.filter(
+                start_date__lte=selected_date,  # start_date should be before or equal to selected_date
+                end_date__gte=selected_date  # end_date should be after or equal to selected_date
+            )
+            for project in projects:
+                project_choices.append((project.project_name, project.project_name))
+            project_choices = project_choices + custom_projects
+
+
+        elif user.level() == 2:
+            assigned_projects = ProjectAssignation.objects.filter(
+                Q(assigning_manager=user) | Q(employee=user)  # OR condition for user
+                ).filter(
+                start_date__lte=selected_date,  # start_date should be before or equal to selected_date
+                end_date__gte=selected_date  # end_date should be after or equal to selected_date
+            ).values_list('project__project_name', flat=True)
+
+            
+            project_choices = [(project, project) for project in assigned_projects] + custom_projects
+
+        else:
+            print("Checked the logged in user level ie employee")
+            assigned_projects = ProjectAssignation.objects.filter(
+                Q(employee=user)  # OR condition for user
+                ).filter(
+                start_date__lte=selected_date,  # start_date should be before or equal to selected_date
+                end_date__gte=selected_date  # end_date should be after or equal to selected_date
+            ).values_list('project__project_name', flat=True)
+            for project in assigned_projects:
+                print(project)
+            project_choices = [(project, project) for project in assigned_projects] + custom_projects
+            for project in project_choices:
+                print(project)
+        return JsonResponse({"project_choices":project_choices})
+
+    else:
+        return JsonResponse({"error":"Not a POST request"})
+
+
+def password_update(request):
+    validate_user = role_required(request=request, permission_name="employee")
+    if isinstance(validate_user, JsonResponse):
+        return validate_user
+
+    user = get_current_user(request)
+
+    if request.method == 'POST':
+        current_password = request.POST.get('c_password')
+        new_password = request.POST.get('n_password')
+        confirm_new_password = request.POST.get('c_n_password')
+
+        if check_password(current_password, user.password_hash):  
+            if new_password == current_password:
+                messages.error(request, "New password cannot be the same as the current password.")
+            elif new_password != confirm_new_password:
+                messages.error(request, "New password and confirmation do not match.")
+            else:
+                has_lower_case = any(c.islower() for c in new_password)
+                has_upper_case = any(c.isupper() for c in new_password)
+                has_special_char = any(c in "!@#$%^&*" for c in new_password)
+                has_digit = any(c.isdigit() for c in new_password)
+                is_length_valid = 8 <= len(new_password) <= 16
+
+                if not has_lower_case:
+                    raise ValidationError("Password must contain at least one lowercase letter.")
+                if not has_upper_case:
+                    raise ValidationError("Password must contain at least one uppercase letter.")
+                if not has_special_char:
+                    raise ValidationError("Password must contain at least one special character.")
+                if not has_digit:
+                    raise ValidationError("Password must contain at least one digit.")
+                if not is_length_valid:
+                    raise ValidationError("Password must be 8-16 characters long.")
+                
+                user.password_hash = make_password(new_password) 
+                user.save()
+                messages.success(request, "Password updated successfully.")
+        else:
+            messages.error(request, "Current password is incorrect.")
+    return redirect(profile_view)
+        
+
+def profile_update(request):
+    validate_user = role_required(request=request, permission_name="employee")
+    if isinstance(validate_user, JsonResponse):
+        return validate_user
+    user = get_current_user(request)
+    level = user.level()
+    operations1 = operations[str(level)]
+    
+    if request.method == 'POST':
+        form = EmployeeProfileUpdateForm(request.POST,logged_in_user=user)
+        if form.is_valid():
+            form.save()
+        else:
+            print(form.errors)
+            messages.error(request, "submitted form is invalid")
+    else:
+        form = EmployeeProfileUpdateForm(instance=user,logged_in_user=user)
+        reporting_manager_name = user.reporting_manager.name() if user.reporting_manager else "Nil"
+        department_name = user.department.department_name if user.department else "Nil"
+
+        role_name = user.get_role_display() if user.role else "Nil"
+        position_name = user.get_position_display() if user.position else "Nil"
+    return render(request, 'profile_update_form.html', {
+        'reporting_manager_name': reporting_manager_name,
+        'department_name': department_name,
+        'position_name': position_name,
+        'role_name': role_name,
+        'form': form,
+        'user':user,
+        'action':'Update',
+        'operations': operations1,
+        'level':level,
+        'active_title':'Edit Profile',
+        'page_paths':['Profile','Edit Profile'],
+    })
+
+
+def toggle_check_in_check_out(request):
+    validate_user = role_required(request=request, permission_name="employee")
+    if isinstance(validate_user, JsonResponse):
+        return validate_user
+    user = get_current_user(request)
+    is_check_in = is_user_checked_in(user)
+    today = datetime.today().date()
+    if is_check_in:
+        check_out = CheckInOut.objects.create(employee=user, is_check_in=False)
+    else:
+        check_in = CheckInOut.objects.create(employee=user, is_check_in=True)
+
+    calculate_attendance(user,today)
+    is_check_in = is_user_checked_in(user)
+    return JsonResponse({
+        "is_check_in": is_check_in,
     })

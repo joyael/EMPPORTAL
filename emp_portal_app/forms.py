@@ -1,6 +1,8 @@
 import datetime
 from django import forms
 from django.core.validators import MaxLengthValidator,MinValueValidator, RegexValidator
+
+from emp_portal_app.helper_functions import check_overlap
 from .models import LeaveRequest, Permission, Department, Employee, Project, ProjectAssignation, Timesheet
 from django.core.exceptions import ValidationError
 import re
@@ -248,6 +250,12 @@ class ProjectAssignationForm(forms.ModelForm):
         assigning_manager = cleaned_data.get('assigning_manager')
         start_date = cleaned_data.get('start_date')
         end_date = cleaned_data.get('end_date')
+        employee = cleaned_data.get('employee')
+
+        pas = ProjectAssignation.objects.filter(employee=employee,project=project)
+        for pa in pas:
+            if check_overlap(pa.start_date,pa.end_date,start_date,end_date):
+                raise ValidationError('Same project and employee overlapping on the existing date range on a project assignation')
 
         if project and assigning_manager:
             if project.manager != assigning_manager:
@@ -276,35 +284,38 @@ class TimesheetForm(forms.ModelForm):
         self.logged_in_user = kwargs.pop('logged_in_user', None)
         super(TimesheetForm, self).__init__(*args, **kwargs)
 
-        # Custom choices
-        custom_projects = [
-            ('bench', 'Bench'),
-            ('training', 'Training'),
-            ('learning', 'Learning'),
+        starting_choices=[
+            ('nil','Select Project'),
         ]
+        # Custom choices
+        # custom_projects = [
+        #     ('bench', 'Bench'),
+        #     ('training', 'Training'),
+        #     ('learning', 'Learning'),
+        # ]
             
-        if self.logged_in_user.level() <= 1:
-            project_choices = []
-            projects = Project.objects.all()
-            for project in projects:
-                project_choices.append((project.project_name, project.project_name))
-            project_choices = project_choices + custom_projects
-            self.fields['project'].choices = project_choices
+        # if self.logged_in_user.level() <= 1:
+        #     project_choices = []
+        #     projects = Project.objects.all()
+        #     for project in projects:
+        #         project_choices.append((project.project_name, project.project_name))
+        #     project_choices = project_choices + custom_projects
+        self.fields['project'].choices = starting_choices
 
-        elif self.logged_in_user.level() == 2:
-            assigned_projects = ProjectAssignation.objects.filter(assigning_manager=self.logged_in_user).values_list('project__project_name', flat=True)
-            project_choices = [(project, project) for project in assigned_projects] + custom_projects
-            self.fields['project'].choices = project_choices
+        # elif self.logged_in_user.level() == 2:
+        #     assigned_projects = ProjectAssignation.objects.filter(assigning_manager=self.logged_in_user).values_list('project__project_name', flat=True)
+        #     project_choices = [(project, project) for project in assigned_projects] + custom_projects
+        #     self.fields['project'].choices = project_choices
 
-        else:
-            print("Checked the logged in user level")
-            assigned_projects = ProjectAssignation.objects.filter(employee=self.logged_in_user).values_list('project__project_name', flat=True)
-            for project in assigned_projects:
-                print(project)
-            project_choices = [(project, project) for project in assigned_projects] + custom_projects
-            for project in project_choices:
-                print(project)
-            self.fields['project'].choices = project_choices
+        # else:
+        #     print("Checked the logged in user level")
+        #     assigned_projects = ProjectAssignation.objects.filter(employee=self.logged_in_user).values_list('project__project_name', flat=True)
+        #     for project in assigned_projects:
+        #         print(project)
+        #     project_choices = [(project, project) for project in assigned_projects] + custom_projects
+        #     for project in project_choices:
+        #         print(project)
+        #     self.fields['project'].choices = project_choices 
 
     def clean_project(self):
         project = self.cleaned_data.get('project')
@@ -319,6 +330,15 @@ class TimesheetForm(forms.ModelForm):
         hours = cleaned_data.get('hours', 0)
         minutes = cleaned_data.get('minutes', 0)
         seconds = cleaned_data.get('seconds', 0)
+        employee = cleaned_data.get('employee')
+
+        if date > datetime.timezone.now().date():
+            raise forms.ValidationError("The date cannot be in the future.")
+        
+        if date and employee:
+            join_date = employee.join_date
+            if date < join_date:
+                raise forms.ValidationError("The timesheet entry date cannot be before the employee's join date.")
 
         if hours == 0 and minutes == 0 and seconds == 0:
             raise forms.ValidationError("Total time must be greater than zero.")
@@ -354,3 +374,100 @@ class LeaveRequestForm(forms.ModelForm):
             'reason': 'Reason',
         }
         
+
+
+
+class EmployeeProfileUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Employee
+        fields = [
+            'first_name', 
+            'last_name', 
+            'DOB', 
+            'email', 
+            'phone', 
+            'join_date', 
+            'reporting_manager', 
+            'role', 
+            'department', 
+            'position', 
+        ]
+        labels = {
+            'DOB': 'Date of Birth',
+            'join_date': 'Join Date',
+        }
+        widgets = {
+            'DOB': forms.DateInput(attrs={'type': 'date'}),  
+            'join_date': forms.DateInput(attrs={'type': 'date'}),  
+        }
+
+    def clean_first_name(self):
+        first_name = self.cleaned_data.get('first_name')
+        if not first_name:
+            raise ValidationError("First name is required.")
+        return first_name
+
+    def clean_last_name(self):
+        last_name = self.cleaned_data.get('last_name')
+        if not last_name:
+            raise ValidationError("Last name is required.")
+        return last_name
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if not email:
+            raise ValidationError("Email is required.")
+        
+        email_pattern = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+        if not re.match(email_pattern, email):
+            raise ValidationError("Please enter a valid email address.")
+        
+        if Employee.objects.filter(email=email).exists():
+            raise ValidationError("This email is already in use.")
+        
+        return email
+
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone')
+        if phone and (not phone.isdigit() or len(phone) != 10):
+            raise ValidationError("Phone number must be exactly 10 digits.")
+        return phone
+    
+    def __init__(self, *args, **kwargs):
+        self.logged_in_user = kwargs.pop('logged_in_user', None)
+        super(EmployeeProfileUpdateForm, self).__init__(*args, **kwargs)
+
+        if self.logged_in_user and self.logged_in_user.level() > 1:
+            self.fields['join_date'].widget.attrs['readonly'] = 'readonly'
+
+            # Fetch names properly
+            reporting_manager_name = self.instance.reporting_manager.name() if self.instance.reporting_manager else "Nil"
+            department_name = self.instance.department.department_name if self.instance.department else "Nil"
+
+            role_name = self.instance.get_role_display() if self.instance.role else "Nil"
+            position_name = self.instance.get_position_display() if self.instance.position else "Nil"
+
+            self.fields['join_date'].disabled = True
+            self.fields['reporting_manager'].disabled = True
+            self.fields['role'].disabled = True
+            self.fields['department'].disabled = True
+            self.fields['position'].disabled = True
+
+            self.fields['reporting_manager'].widget = forms.TextInput(attrs={'value': reporting_manager_name, 'readonly': 'readonly'})
+            self.fields['role'].widget = forms.TextInput(attrs={'value': role_name, 'readonly': 'readonly'})
+            self.fields['department'].widget = forms.TextInput(attrs={'value': department_name, 'readonly': 'readonly'})
+            self.fields['position'].widget = forms.TextInput(attrs={'value': position_name, 'readonly': 'readonly'})
+
+            self.fields['reporting_manager'].initial = reporting_manager_name
+            self.fields['role'].initial = role_name
+            self.fields['department'].initial = department_name
+            self.fields['position'].initial = position_name
+
+            print("Reporting Manager name:", reporting_manager_name)
+            print("Role:", role_name)
+            print("Department:", department_name)
+            print("Position:", position_name)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        return cleaned_data

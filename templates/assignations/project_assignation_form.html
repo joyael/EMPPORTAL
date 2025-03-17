@@ -19,7 +19,25 @@
         <div class="title-box">{{ action }} Project Assignation</div>
         <div class="errorbar" id="errorbox"></div>
 
+
         <form id="projectForm" method="post">
+
+            {% if form.errors %}
+                <div class="form_errors_div">
+                    <strong>Please correct the following errors:</strong>
+                    <ul>
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
             {% csrf_token %}
             <div class="form-group">
                 <label for="id_project">Project:</label>
