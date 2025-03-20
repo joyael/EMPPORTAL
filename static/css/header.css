@@ -221,6 +221,7 @@ header {
 .checkintime p{
     padding: 0px;
     margin:0px;
+    font-weight: bold;
 }
 
 
@@ -231,21 +232,27 @@ header {
     align-items: center;
 }
 
+.red_color{
+    background-color:#d44;
+}
+.green_color{
+    background-color:green;
+}
+
 .checkinbutton {
     padding:0px;
-    width:90px;
+    width:120px;
     cursor: pointer;
     display: grid;
     place-items: center;
-    grid-template-columns: 1fr 4fr 1fr;
+    grid-template-columns: 1fr 6fr 1fr;
     gap: 0px;
 }
 .semicircle-button {
-    background-color: #d44;
     border: none;
     color: white;
     height:30px;
-    width:60px;
+    width:90px;
     font-size:10px;
     text-align: center;
     text-decoration: none;
@@ -259,13 +266,11 @@ header {
 .semi-circle-left{
     width: 15px; 
     height: 30px; 
-    background-color: #d44; /* Example color */
     border-radius: 15px 0 0 15px;  /* Left-facing semicircle */
 }
 .semi-circle-right{
     width: 15px; 
     height: 30px; 
-    background-color: #d44; /* Example color */
     border-radius: 0 15px 15px 0;  
 }
 

@@ -36,7 +36,16 @@ function updateDateTime() {
 
 }
 
+
+
+
 document.addEventListener('DOMContentLoaded', () => {
     updateDateTime();
     setInterval(updateDateTime, 1000);
+    updateCheckInTime();
 });
+
+
+
+
+

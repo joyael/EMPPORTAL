@@ -6,6 +6,20 @@ from django.db.models import UniqueConstraint
 
 #Create your models here.
 
+def default_working_days():
+    return ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+
+class Shift(models.Model):
+    name = models.CharField(max_length=50, default="General Shift",unique=True)
+    start_time = models.TimeField(default="03:30:00") 
+    end_time = models.TimeField(default="12:30:00")
+    total_hours = models.FloatField(default=8.0)
+    working_days = models.JSONField(default=default_working_days)
+
+    def __str__(self):
+        return self.name
+
+
 class RefreshToken(models.Model):
     id = models.AutoField(primary_key=True)
     token = models.CharField(max_length=255, unique=True)
@@ -97,6 +111,7 @@ class Employee(models.Model):
         default='active',
     )
     last_updated = models.DateTimeField(auto_now_add=True,null=True,blank=True)
+    shift = models.ForeignKey(Shift, on_delete = models.SET_NULL, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.password_hash.startswith('pbkdf2_sha256$'):
@@ -232,18 +247,8 @@ class LeaveRequest(models.Model):
         return f"{self.employee} - {self.leave_type} on {self.date} ({self.status})"
 
 
-def default_working_days():
-    return ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 
-class Shift(models.Model):
-    name = models.CharField(max_length=50, default="General Shift")
-    start_time = models.TimeField(default="03:30:00") 
-    end_time = models.TimeField(default="12:30:00")
-    total_hours = models.FloatField(default=8.0)
-    working_days = models.JSONField(default=default_working_days)
 
-    def __str__(self):
-        return self.name
 
 
 class Attendance(models.Model):
@@ -251,7 +256,7 @@ class Attendance(models.Model):
     date = models.DateField(auto_now_add=True)
     first_check_in = models.DateTimeField(null=True, blank=True)
     last_check_out = models.DateTimeField(null=True, blank=True)
-    total_worked_hours = models.FloatField(default=0.0)
+    total_worked_seconds = models.IntegerField(default=0)
 
     ATTENDANCE_CHOICES = [
         ('first_half_present', 'First Half Present'),
@@ -266,9 +271,6 @@ class Attendance(models.Model):
         default='absent',
     )
     class Meta:
-        constraints = [
-            UniqueConstraint(fields=['employee', 'date'], name='unique_employee_date')
-        ]
         verbose_name = 'Attendance'
         verbose_name_plural = 'Attendances'
 

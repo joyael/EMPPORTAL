@@ -13,7 +13,7 @@ from django.db.models import Q
 
 from EMPPORTAL import settings
 from emp_portal_app.auth import get_current_user, role_required
-from emp_portal_app.models import SHIFT_HOURS_IN_A_DAY, CheckInOut
+from emp_portal_app.models import SHIFT_HOURS_IN_A_DAY, CheckInOut, Shift, default_working_days
 from .helper_functions import calculate_attendance, check_leave_balance, check_leave_conflicts, get_dates, get_remaining_leave_data, get_the_break_down_total_data, get_the_overview_total_data, is_user_checked_in, timesheeet_overview_data_extract
 from .operations_by_role import operations
 
@@ -34,6 +34,8 @@ from allauth.socialaccount.models import SocialAccount
 
 from datetime import datetime, timedelta
 from django.utils.timezone import now
+from django.utils.timezone import localtime, make_aware
+
 from emp_portal_app.models import CASUAL_LEAVE_QUARTERLY_COUNT, RH_YEARLY_COUNT, SHIFT_HOURS_IN_A_DAY, SICK_LEAVE_QUARTERLY_COUNT
 
 
@@ -1385,14 +1387,115 @@ def toggle_check_in_check_out(request):
         return validate_user
     user = get_current_user(request)
     is_check_in = is_user_checked_in(user)
-    today = datetime.today().date()
+    today = localtime().date()
+    print("Today date : ",today)
+    yesterday = today - timedelta(days=1)
+    print("Yesterday Date : ",yesterday)
+
     if is_check_in:
         check_out = CheckInOut.objects.create(employee=user, is_check_in=False)
     else:
         check_in = CheckInOut.objects.create(employee=user, is_check_in=True)
+    
+    
+    attendance_yesterday = calculate_attendance(user,yesterday)
 
-    calculate_attendance(user,today)
+    attendance = calculate_attendance(user,today)
     is_check_in = is_user_checked_in(user)
+    total_seconds = attendance.total_worked_seconds
+    hours = total_seconds // 3600
+    minutes = (total_seconds % 3600) // 60
+    seconds = total_seconds % 60
+    time_string = f"{hours:02}:{minutes:02}:{seconds:02}"
     return JsonResponse({
         "is_check_in": is_check_in,
+        "hours":hours,
+        "minutes":minutes,
+        "seconds":seconds,
+        "time_string":time_string,
     })
+
+def get_total_time_worked(request):
+    validate_user = role_required(request=request, permission_name="employee")
+    if isinstance(validate_user, JsonResponse):
+        return validate_user
+    user = get_current_user(request)
+    today = localtime().date()  
+    start_of_day = make_aware(datetime(today.year, today.month, today.day, 0, 0, 0))  # Start of today
+    end_of_day = make_aware(datetime(today.year, today.month, today.day, 23, 59, 59))  # End of today
+
+    check_ins_outs = CheckInOut.objects.filter(
+        employee=user,
+        timestamp__gte=start_of_day,  # Greater than or equal to start of today
+        timestamp__lte=end_of_day,  # Less than or equal to end of today
+    )
+
+    # Total worked hours calculation
+    total_worked_time = timedelta()
+    last_check_in_time = None
+
+    if check_ins_outs.exists():
+        for entry in check_ins_outs:
+            entry_time_ist = localtime(entry.timestamp)  # Convert each entry timestamp to IST
+            if entry.is_check_in:
+                last_check_in_time = entry_time_ist
+            else:
+                if last_check_in_time:
+                    total_worked_time += (entry_time_ist - last_check_in_time)
+                    last_check_in_time = None
+
+        last_check_out_ist = localtime(check_ins_outs.last().timestamp)
+        now = localtime()
+        if check_ins_outs.last().is_check_in:
+            total_worked_time += now - last_check_out_ist
+
+    total_worked_seconds = total_worked_time.total_seconds()
+         
+    is_check_in = is_user_checked_in(user)
+    total_seconds = int(total_worked_seconds)
+    print("Total seconds is :", total_seconds)
+    hours = total_seconds // 3600
+    minutes = (total_seconds % 3600) // 60
+    seconds = total_seconds % 60
+    print("Hours :", hours,"Minutes :",minutes, "Seconds :",seconds)
+    time_string = f"{hours:02}:{minutes:02}:{seconds:02}"
+    print("Time worked is ", time_string)
+    return JsonResponse({
+        "is_check_in": is_check_in,
+        "hours":hours,
+        "minutes":minutes,
+        "seconds":seconds,
+        "time_string":time_string,
+    })
+
+
+def shift_initializing_code(request):
+    shift, created = Shift.objects.get_or_create(
+        name="General Shift"
+    )
+
+    employees = Employee.objects.all()
+    for employee in employees:
+        employee.shift = shift
+        employee.save()
+
+    if created:
+        response_data = {
+            "message": "A new Shift object was created.",
+            "shift_id": shift.id,  # Optionally include the ID of the created shift
+            "shift_name": shift.name,
+        }
+    else:
+        response_data = {
+            "message": "The Shift object already exists.",
+            "shift_id": shift.id,  # Optionally include the ID of the existing shift
+            "shift_name": shift.name,
+        }
+
+    return JsonResponse(response_data)
+
+
+
+
+
+

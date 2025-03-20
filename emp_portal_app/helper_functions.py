@@ -1,5 +1,10 @@
 from datetime import datetime, timedelta, date
-from django.utils.timezone import now
+from datetime import timezone as datetime_timezone
+
+from django.utils.timezone import localtime, make_aware, get_default_timezone
+from django.utils import timezone
+from datetime import timedelta
+from .models import Attendance, CheckInOut
 
 from emp_portal_app.models import CASUAL_LEAVE_QUARTERLY_COUNT, RH_YEARLY_COUNT, SHIFT_HOURS_IN_A_DAY, SICK_LEAVE_QUARTERLY_COUNT, LeaveRequest
 from django.db.models import Q
@@ -448,41 +453,27 @@ def check_overlap(start1, end1, start2, end2):
 
 
 
-from django.utils.timezone import localtime
-from datetime import timedelta
-from .models import Attendance, CheckInOut
+
+
+
 
 def is_user_checked_in(employee):
-    last_entry = CheckInOut.objects.filter(employee=employee).order_by('-timestamp').first()
-
-    if last_entry and last_entry.is_check_in:
-        return True
-
-    today = localtime().date()  
+    today = localtime().date()  # Get today's date in IST
+    start_of_day = make_aware(datetime(today.year, today.month, today.day, 0, 0, 0))  # Start of today
+    end_of_day = make_aware(datetime(today.year, today.month, today.day, 23, 59, 59))  # End of today
 
     today_check_ins = CheckInOut.objects.filter(
-        employee=employee, 
-        timestamp__date=today, 
-        is_check_in=True
+        employee=employee,
+        timestamp__gte=start_of_day,  # Greater than or equal to start of today
+        timestamp__lte=end_of_day,  # Less than or equal to end of today
     )
 
     if not today_check_ins.exists():
-        return False  
+        return False  # No check-ins today → Not checked in
+
     last_check_in = today_check_ins.latest('timestamp')
-    last_check_out = CheckInOut.objects.filter(
-        employee=employee, 
-        timestamp__date=today, 
-        is_check_in=False, 
-        timestamp__gt=last_check_in.timestamp  # Find a check-out after the last check-in
-    ).order_by('timestamp').first()
+    return last_check_in.is_check_in  # Return True if last action was a check-in
 
-    if last_check_out:
-        return False  # There is a check-out after the last check-in → Checked Out
-    return True  # No check-out found → Still Checked In
-
-
-from django.utils.timezone import localtime
-from datetime import datetime, timedelta
 
 def calculate_attendance(employee, date):
     shift = employee.shift
@@ -490,37 +481,62 @@ def calculate_attendance(employee, date):
     shift_end_time = shift.end_time  
     total_shift_hours = shift.total_hours
 
-    check_ins_outs = CheckInOut.objects.filter(employee=employee, timestamp__date=date).order_by('timestamp')
+    today = date  
+    # Create naive datetime objects for 12:00 AM and 11:59 PM in IST
+    start_of_day_ist = datetime(today.year, today.month, today.day, 0, 0, 0)
+    end_of_day_ist = datetime(today.year, today.month, today.day, 23, 59, 59)
+
+    # Make these datetimes timezone-aware in the current Django timezone (IST)
+    start_of_day_aware = timezone.make_aware(start_of_day_ist)
+    end_of_day_aware = timezone.make_aware(end_of_day_ist)
+
+    # Convert them to UTC
+    start_of_day_utc = start_of_day_aware.astimezone(datetime_timezone.utc)
+    end_of_day_utc = end_of_day_aware.astimezone(datetime_timezone.utc)
+
+    print(start_of_day_utc)
+    print(end_of_day_utc)
+
+    check_ins_outs = CheckInOut.objects.filter(
+        employee=employee,
+        timestamp__gte=start_of_day_utc,  # Greater than or equal to start of today
+        timestamp__lte=end_of_day_utc,  # Less than or equal to end of today
+    )
 
     if not check_ins_outs.exists():
-        Attendance.objects.update_or_create(
-            employee=employee,
-            date=date,
-            defaults={
-                "attendance_status": "absent",  # Set attendance status to 'absent'
-                "total_worked_hours": 0.0,  # Optionally reset worked hours if needed
-                "first_check_in": None,  # Reset check-in if needed
-                "last_check_out": None,  # Reset check-out if needed
-            }
-        )
-        return
-
+        print("No check in checkouts found")
+        attendance_found = Attendance.objects.filter(employee=employee, date=date).exists()
+        print("Employee ID : ", employee.employee_id)
+        print("Date : ", date)
+        print("Attendance_already_there : ", attendance_found)
+        if not attendance_found:
+            attendance = Attendance.objects.create(
+                employee=employee,
+                date=date,
+            )
+            return attendance
+    print("Checkincheckouts were found")
+    first_check_in_utc = check_ins_outs.first().timestamp
+    last_check_out_utc = check_ins_outs.last().timestamp
     # Convert timestamps to IST
-    first_check_in = localtime(check_ins_outs.first().timestamp)  
-    last_check_out = localtime(check_ins_outs.last().timestamp) 
+    first_check_in_ist = localtime(check_ins_outs.first().timestamp)  
+    last_check_out_ist = localtime(check_ins_outs.last().timestamp) 
+
+    print("First_check_in_of_the_day : ", first_check_in_ist)
+    print("Last_check_in_of_the_day : ", last_check_out_ist)
+
 
     # Attendance rules in IST
-    shift_start_datetime = datetime.combine(date, shift_start_time)  # 9:00 AM shift start
-    shift_start_datetime_ist = localtime(shift_start_datetime)  # Convert to IST
+
+    # Assuming shift_start_time is a time object and date is a date object
+    shift_start_datetime = datetime.combine(date, shift_start_time)  
+    shift_start_datetime_aware = make_aware(shift_start_datetime, timezone=get_default_timezone())
+    shift_start_datetime_ist = localtime(shift_start_datetime_aware)
 
     shift_end_datetime = datetime.combine(date, shift_end_time)
-    
+    shift_end_datetime_aware = make_aware(shift_end_datetime, timezone=get_default_timezone())
+    shift_end_datetime_ist = localtime(shift_end_datetime_aware)
 
-    # Check if first check-in is late (more than 30 minutes after shift start)
-    if first_check_in > shift_start_datetime_ist + timedelta(minutes=30):
-        first_half_absent = True
-    else:
-        first_half_absent = False
 
     # Total worked hours calculation
     total_worked_time = timedelta()
@@ -536,24 +552,63 @@ def calculate_attendance(employee, date):
                 last_check_in_time = None
 
     total_worked_hours = total_worked_time.total_seconds() / 3600  # Convert to hours
+    total_worked_seconds = total_worked_time.total_seconds()
+    total_worked_seconds = int(total_worked_seconds)
+
+    if first_check_in_ist > shift_start_datetime_ist + timedelta(minutes=30):
+        first_half_absent = True
+    else:
+        first_half_absent = False
 
     # Mark attendance status
     is_full_day = total_worked_hours >= total_shift_hours
     if total_worked_hours > 13:
-        is_half_day = True  # Mark second half as absent
+        second_half_absent = True  # Mark second half as absent
+    elif  is_full_day:
+        second_half_absent = False
+    elif not  is_full_day:
+        if total_worked_hours >= (total_shift_hours/2):
+            if first_half_absent:
+                second_half_absent = False
+            else:
+                second_half_absent = True
+        else:
+            first_half_absent = True
+            second_half_absent = True
+    
+    if not check_ins_outs.last().is_check_in:
+        if last_check_out_ist < shift_end_datetime_ist:
+            second_half_absent = True
+    
+    if not first_half_absent and second_half_absent:
+        attendance_status = "first_half_present"
+    elif first_half_absent and not second_half_absent:
+        attendance_status = "second_half_present"
+    elif first_half_absent and second_half_absent:
+        attendance_status = "absent"
+    else:
+        attendance_status = "present"
 
-    is_absent = not is_full_day and not is_half_day
 
     # Update attendance record
-    Attendance.objects.update_or_create(
-        employee=employee,
-        date=date,
-        defaults={
-            "first_check_in": first_check_in,
-            "last_check_out": last_check_out,
-            "total_worked_hours": total_worked_hours,
-            "is_full_day_present": is_full_day,
-            "is_half_day_present": is_half_day,
-            "is_absent": is_absent,
-        }
-    )
+    attendance_found = Attendance.objects.filter(employee=employee, date=date).exists()
+    if attendance_found:
+        filtered_objects = Attendance.objects.filter(employee=employee, date=date)
+        attendance = filtered_objects.first()
+        attendance.first_check_in = first_check_in_utc
+        attendance.last_check_out = last_check_out_utc
+        attendance.total_worked_seconds = total_worked_seconds
+        attendance.attendance_status = attendance_status
+        attendance.save()
+    else:
+        attendance = Attendance.objects.create(
+            employee=employee,
+            date=date,
+            defaults={
+                "first_check_in": first_check_in_utc,
+                "last_check_out": last_check_out_utc,
+                "total_worked_seconds": total_worked_seconds,
+                "attendance_status": attendance_status,
+            }
+        )
+    return attendance

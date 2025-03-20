@@ -46,11 +46,15 @@ urlpatterns = [
     path('timesheet/timesheet_breakdown', timesheet_breakdown, name='timesheet_breakdown'),
     path('timesheet/get_projects', get_projects, name='get_projects'),
 
-
     path('leaves/apply/', apply_leave, name='apply_leave'),
     path('leave-applications/', leave_applications, name='leave_applications'),
 
     path('employees/profile_update/', profile_update, name='profile_update'),
     path('password_update', password_update, name='password_update'),
 
+    path('toggle_check_in_check_out/', toggle_check_in_check_out, name='toggle_check_in_check_out'),
+    path('get_total_time_worked/', get_total_time_worked, name='get_total_time_worked'),
+
+   
+    path('shift_initializing_code/', shift_initializing_code, name='shift_initializing_code'),
 ]
