@@ -44,6 +44,9 @@ operations = {
         "Project Assignations": {
             "Create Project Assignation": "project_assignation_create",
             "View Project Assignations any": "project_assignation_list",
+        },
+        "Attendance":{
+            "Tabular View": "attendance_tabular_view",
         }
     },
     "2": {
@@ -69,6 +72,9 @@ operations = {
         "Leave":{
             "Apply Leave": "apply_leave",
             "Leave Applications" : "leave_applications",
+        },
+        "Attendance":{
+            "Tabular View": "attendance_tabular_view",
         }
     },
     "3": {
@@ -89,6 +95,9 @@ operations = {
         "Leave":{
             "Apply Leave": "apply_leave",
             "Leave Applications" : "leave_applications",
+        },
+        "Attendance":{
+            "Tabular View": "attendance_tabular_view",
         }
     }
 }

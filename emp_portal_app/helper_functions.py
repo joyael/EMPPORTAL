@@ -1,5 +1,8 @@
 from datetime import datetime, timedelta, date
 from datetime import timezone as datetime_timezone
+import datetime as parent_datetime
+from collections import Counter
+import calendar
 
 from django.utils.timezone import localtime, make_aware, get_default_timezone
 from django.utils import timezone
@@ -525,7 +528,6 @@ def calculate_attendance(employee, date):
     print("First_check_in_of_the_day : ", first_check_in_ist)
     print("Last_check_in_of_the_day : ", last_check_out_ist)
 
-
     # Attendance rules in IST
 
     # Assuming shift_start_time is a time object and date is a date object
@@ -536,7 +538,6 @@ def calculate_attendance(employee, date):
     shift_end_datetime = datetime.combine(date, shift_end_time)
     shift_end_datetime_aware = make_aware(shift_end_datetime, timezone=get_default_timezone())
     shift_end_datetime_ist = localtime(shift_end_datetime_aware)
-
 
     # Total worked hours calculation
     total_worked_time = timedelta()
@@ -551,7 +552,7 @@ def calculate_attendance(employee, date):
                 total_worked_time += (entry_time_ist - last_check_in_time)
                 last_check_in_time = None
 
-    total_worked_hours = total_worked_time.total_seconds() / 3600  # Convert to hours
+    total_worked_hours = total_worked_time.total_seconds() / 3600  #Convert to hours
     total_worked_seconds = total_worked_time.total_seconds()
     total_worked_seconds = int(total_worked_seconds)
 
@@ -612,3 +613,94 @@ def calculate_attendance(employee, date):
             }
         )
     return attendance
+
+
+
+def convert(seconds):
+    """Convert seconds to HH:MM format."""
+    hours, remainder = divmod(seconds, 3600)
+    minutes, _ = divmod(remainder, 60)
+    return f"{hours:02}:{minutes:02}"
+
+def is_weekend(date, employee):
+    """Check if the given date is a weekend for the specified employee."""
+    if employee.position == '1':  # Assuming '1' is the position for special weekend rules
+        # Check for second Saturday and Sunday
+        if date.weekday() == 5:  # Saturday
+            # Check if it's the second Saturday of the month
+            if (date.day - 1) // 14 == 1:  # Second Saturday
+                return True
+            return False
+        elif date.weekday() == 6:  # Sunday
+            return True
+    else:
+        # Regular weekends: Saturday and Sunday
+        return date.weekday() in [5, 6]  # 5 = Saturday, 6 = Sunday
+
+    return False
+
+def generate_attendance_list(start_date, end_date, employee):
+    attendance_list = []
+    
+    # Generate a list of dates from start_date to end_date
+    current_date = start_date
+    while current_date <= end_date:
+        item = {}
+        
+        # Check for attendance object
+        attendance = Attendance.objects.filter(employee=employee, date=current_date).first()
+        
+        if attendance:
+            item["date"] = attendance.date
+            first_check_in_ist = localtime(attendance.first_check_in) if attendance.first_check_in else None
+            last_check_out_ist = localtime(attendance.last_check_out) if attendance.last_check_out else None
+            item["first_in"] = first_check_in_ist.strftime("%H:%M") if attendance.first_check_in else None
+            item["last_out"] = last_check_out_ist.strftime("%H:%M") if attendance.last_check_out else None
+            item["total_hours"] = convert(attendance.total_worked_seconds)
+            item["payable_hours"] = item["total_hours"] if convert(attendance.total_worked_seconds) < "08:00" else "08:00"
+            item["status"] = attendance.get_attendance_status_display()
+        else:
+            # No attendance object found, check if it's a weekend
+            if is_weekend(current_date, employee):
+                item["date"] = current_date
+                item["first_in"] = "00:00"
+                item["last_out"] = "00:00"
+                item["total_hours"] = "00:00"
+                item["payable_hours"] = "00:00"
+                item["status"] = "Weekend"
+            else:
+                item["date"] = current_date
+                item["first_in"] = "00:00"
+                item["last_out"] = "00:00"
+                item["total_hours"] = "00:00"
+                item["payable_hours"] = "00:00"
+                item["status"] = "Absent"
+        
+        attendance_list.append(item)
+        current_date += timedelta(days=1)  # Move to the next day
+
+    return attendance_list
+
+
+
+def majority_month(start_date, end_date):
+    # Generate all dates between start_date and end_date (inclusive)
+    delta = end_date - start_date
+    date_list = [start_date + timedelta(days=i) for i in range(delta.days + 1)]
+    # Extract months and corresponding years from the dates
+    month_years = [(date.month, date.year) for date in date_list]
+    # Count occurrences of each (month, year) tuple
+    month_counts = Counter(month_years)
+    # Find the (month, year) with the maximum count
+    majority_month_number, majority_year = month_counts.most_common(1)[0][0]
+    # Get the month name
+    month_name = calendar.month_name[majority_month_number]
+    # Calculate the start and end date of the majority month
+    month_start_date = datetime(majority_year, majority_month_number, 1).date()
+    month_end_date = datetime(majority_year, majority_month_number, 
+                              calendar.monthrange(majority_year, majority_month_number)[1]).date()
+    return {
+        "month_name": month_name,
+        "month_start_date": month_start_date,
+        "month_end_date": month_end_date,
+    }

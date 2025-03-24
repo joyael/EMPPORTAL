@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    {% load static %}
+
+    {% include 'main_linkings.html' %}
+
+    <link rel="stylesheet" href="{% static 'css/attendance_tabular_view.css' %}">
+    <script src="{% static 'js/attendance_tabular_view.js' %}"></script>
+
+</head>
+<body>
+    
+    {% include 'header.html' %}
+    <div class="attendance_tabular_view_container">
+        <div class="attendance_tabular_view_box" id="the_attendance_table_wrap_box">
+            <div class="dates_row">
+                <!-- Current Period Section -->
+                <div class="dates_div">
+                    <a href="#" class="next_previous_link" data-direction="previous" id="previous_button_for_calendar_view" onclick="previous_calendar_view()">
+                        <span class="mr-4">&lt;</span>
+                    </a>
+                    <span id="current-period" class="dates_range">
+                        {% if week_or_month == "week" %}
+                            {{ current_week_start_date|date:"d-m-Y" }} - {{ current_week_end_date|date:"d-m-Y" }}
+                        {% else %}
+                            {{ current_month }}
+                        {% endif %}
+                    </span>
+                    <a href="#" class="next_previous_link" data-direction="next" id="next_button_for_calendar_view" onclick="next_calendar_view()">
+                        <span class="ml-4">&gt;</span>
+                    </a>
+                </div>
+                <!-- View Buttons Section -->
+                <div class="view_toggling_div">
+                    <button id="week-view" class="calendar_view_form_button {% if week_or_month == 'week' %} active {% endif %}" data-view="week" title="Weekly View" onclick="toggle_week_view()">
+                        <img src="{% static 'images/week_icon.png' %}" alt="Weekly View" class="button_image">
+                    </button>
+                    <button id="month-view" class="calendar_view_form_button {% if week_or_month == 'month' %} active {% endif %}" data-view="month" title="Monthly View" onclick="toggle_month_view()">
+                        <img src="{% static 'images/month_icon.png' %}" alt="Monthly View" class="button_image">
+                    </button>
+                </div>
+            </div>
+            <form id="form_for_tabular_view" hidden>
+                <input id="week_or_month" name="week_or_month" value="{{ week_or_month }}">
+                <input id="current_week_start_date" name="current_week_start_date" value="{{ current_week_start_date }}">
+                <input id="current_week_end_date" name="current_week_end_date" value="{{ current_week_end_date }}">
+                <input id="current_month_start_date" name="current_month_start_date" value="{{  current_month_start_date  }}">
+                <input id="current_month_end_date" name="current_month_end_date" value="{{ current_month_end_date  }}">
+                <input id="current_month" name="current_month" value="{{ current_month  }}">
+                <input id="action_for_view" name="action_for_view" value="" data-attendance_tview-url = "{% url 'attendance_tabular_view' %}">
+            </form>
+            
+            <table class="attendance_table" id="attendance_table">
+                <!--  table content -->
+                <thead class="thead_attendance_table">
+                    <tr>
+                        <th class="table_cell_value">Date</th>
+                        <th class="table_cell_value">First In</th>
+                        <th class="table_cell_value">Last Out</th>
+                        <th class="table_cell_value">Total Hours</th>
+                        <th class="table_cell_value">Payable Hours</th>
+                        <th class="table_cell_value">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="text-xs text-center">
+                    {% for item in attendance_list %}
+                        <tr>
+                            <td title="" class="table_cell_value">{{ item.date|date:"D, F j, Y" }}</td>
+                            <td title="" class="table_cell_value">{{ item.first_in }}</td>
+                            <td title="" class="table_cell_value">{{ item.last_out }}</td>
+                            <td title="" class="table_cell_value">{{ item.total_hours }}</td>
+                            <td title="" class="table_cell_value">{{ item.payable_hours }}</td>
+                            <td title="" class="table_cell_value">
+                                <div class="status-container">
+                                    <span class="status-circle {% if item.status == 'Present' %}bg-green{% elif item.status == 'Absent' %}bg-red{% else %}bg-yellow{% endif %}"></span>
+                                    <span class="status-text">{{ item.status }}</span>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+    {% include 'footer.html' %}
+
+</body>
+</html>

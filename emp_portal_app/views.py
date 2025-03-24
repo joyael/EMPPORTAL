@@ -14,7 +14,7 @@ from django.db.models import Q
 from EMPPORTAL import settings
 from emp_portal_app.auth import get_current_user, role_required
 from emp_portal_app.models import SHIFT_HOURS_IN_A_DAY, CheckInOut, Shift, default_working_days
-from .helper_functions import calculate_attendance, check_leave_balance, check_leave_conflicts, get_dates, get_remaining_leave_data, get_the_break_down_total_data, get_the_overview_total_data, is_user_checked_in, timesheeet_overview_data_extract
+from .helper_functions import calculate_attendance, check_leave_balance, check_leave_conflicts, generate_attendance_list, get_dates, get_remaining_leave_data, get_the_break_down_total_data, get_the_overview_total_data, is_user_checked_in, majority_month, timesheeet_overview_data_extract
 from .operations_by_role import operations
 
 from .forms import *
@@ -1491,11 +1491,112 @@ def shift_initializing_code(request):
             "shift_id": shift.id,  # Optionally include the ID of the existing shift
             "shift_name": shift.name,
         }
-
     return JsonResponse(response_data)
 
+def attendance_tabular_view(request):
+    validate_user = role_required(request=request, permission_name="employee")
+    if isinstance(validate_user, JsonResponse):
+        return validate_user
+    user = get_current_user(request)
+    level = user.level()
+    operations1 = operations[str(level)]
+
+    week_or_month="week"
+    today = datetime.now()
+    start_of_week_timestamp = today - timedelta(days=today.weekday())  # Monday is the start of the week
+    end_of_week_timestamp = start_of_week_timestamp + timedelta(days=6)  # Sunday is the end of the week
+    start_date_of_week = start_of_week_timestamp.date()
+    end_date_of_week = end_of_week_timestamp.date()
+    month = datetime.now().strftime("%B")
+    start_date_of_month = today.replace(day=1).date()
+    if today.month == 12:
+        end_date_of_month = datetime(today.year + 1, 1, 1) - timedelta(days=1)
+    else:
+        end_date_of_month = datetime(today.year, today.month + 1, 1) - timedelta(days=1)
+    end_date_of_month = end_date_of_month.date()
+    data = generate_attendance_list(start_date_of_week,end_date_of_week, user)
+    
+
+    if request.method == "POST":
+        user = request.user
+        action = request.POST.get("action_for_view")
+        week_or_month = request.POST.get("week_or_month")
+
+        today = datetime.now()
+
+        if week_or_month == "week":
+            start_date_of_week = datetime.strptime(request.POST.get("current_week_start_date"), "%Y-%m-%d")
+            if action == "next":
+                start_date_of_week += timedelta(days=7)
+            elif action == "previous":
+                start_date_of_week -= timedelta(days=7)
+            start_of_week_timestamp = start_date_of_week
+            end_of_week_timestamp = start_of_week_timestamp + timedelta(days=6)
+            end_date_of_week = end_of_week_timestamp.date()
+
+            month_data = majority_month(start_date_of_week, end_date_of_week)
+            month = month_data["month_name"]
+            start_date_of_month = month_data["month_start_date"]
+            end_date_of_month = month_data["month_end_date"]
+
+        else:  # month
+            start_date_of_month = datetime.strptime(request.POST.get("current_month_start_date"), "%Y-%m-%d")
+            if action == "next":
+                next_month = start_date_of_month.month + 1 if start_date_of_month.month < 12 else 1
+                year = start_date_of_month.year if next_month > 1 else start_date_of_month.year + 1
+                start_date_of_month = datetime(year, next_month, 1).date()
+            elif action == "previous":
+                prev_month = start_date_of_month.month - 1 if start_date_of_month.month > 1 else 12
+                year = start_date_of_month.year if prev_month < 12 else start_date_of_month.year - 1
+                start_date_of_month = datetime(year, prev_month, 1).date()
+
+            start_date_of_month = datetime.combine(start_date_of_month, datetime.min.time())
+            end_date_of_month = (datetime(start_date_of_month.year, start_date_of_month.month + 1, 1) - timedelta(days=1)).date()
+            month = start_date_of_month.strftime("%B")
+
+            start_month_timestamp = datetime.combine(start_date_of_month, datetime.min.time())
+
+            start_date_of_week = today - timedelta(days=start_month_timestamp.weekday())  # Reset week values
+            end_date_of_week = start_date_of_week + timedelta(days=6)
+
+        if action in ["change_to_month", "change_to_week"]:
+            week_or_month = "month" if action == "change_to_month" else "week"
+
+        # Fetch updated attendance list
+        data = generate_attendance_list(start_date_of_week, end_date_of_week, user)
+
+        return render(request, "attendance/attendance_tabular_view.html", {
+            "user": user,
+            "attendance_list": data,
+            "week_or_month": week_or_month,
+            "current_week_start_date": start_date_of_week,
+            "current_week_end_date": end_date_of_week,
+            "current_month_start_date": start_date_of_month,
+            "current_month_end_date": end_date_of_month,
+            "current_month": month,
+        })
+
+
+    return render(request, 'attendance/attendance_tabular_view.html', {
+        'user':user,
+        'operations': operations1,
+        'level':level,
+        'active_title' : 'Attendance',
+        'page_paths': ['Attendance','Tabular View'],
+        'attendance_list' : data,
+        'week_or_month' : week_or_month,
+        'current_week_start_date' : start_date_of_week,
+        'current_week_end_date' : end_date_of_week,
+        'current_month_start_date' : start_date_of_month,
+        'current_month_end_date' : end_date_of_month,
+        'current_month' : month,
+    })
 
 
 
-
-
+def change_to_month_view(request):
+    validate_user = role_required(request=request, permission_name="employee")
+    if isinstance(validate_user, JsonResponse):
+        return validate_user
+    user = get_current_user(request)
+    

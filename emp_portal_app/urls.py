@@ -57,4 +57,6 @@ urlpatterns = [
 
    
     path('shift_initializing_code/', shift_initializing_code, name='shift_initializing_code'),
+
+    path('attendance/tabular_view', attendance_tabular_view,name='attendance_tabular_view'),
 ]

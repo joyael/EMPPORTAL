@@ -1,0 +1,16 @@
+{% load static %}
+{% for item in attendance_list %}
+                        <tr>
+                            <td title="" class="table_cell_value">{{ item.date }}</td>
+                            <td title="" class="table_cell_value">{{ item.first_in }}</td>
+                            <td title="" class="table_cell_value">{{ item.last_out }}</td>
+                            <td title="" class="table_cell_value">{{ item.total_hours }}</td>
+                            <td title="" class="table_cell_value">{{ item.payable_hours }}</td>
+                            <td title="" class="table_cell_value">
+                                <div class="status-container">
+                                    <span class="status-circle {% if item.status == 'Present' %}bg-green{% elif item.status == 'Absent' %}bg-red{% else %}bg-yellow{% endif %}"></span>
+                                    <span class="status-text">{{ item.status }}</span>
+                                </div>
+                            </td>
+                        </tr>
+{% endfor %}

@@ -1,0 +1,180 @@
+.attendance_tabular_view_container {
+    padding-left: 1.5rem; /* Final padding-left */
+    padding-right: 1.5rem; /* Final padding-right */
+    margin-left: auto;    /* Centering the container */
+    margin-right: auto;   /* Centering the container */
+  }
+
+
+  .attendance_tabular_view_box {
+    width: 100%; 
+  }
+  
+  /* Padding for different screen sizes */
+  @media (min-width: 640px) {
+    .attendance_tabular_view_box {
+      padding-left: 1.5rem; /* From .sm\:px-6 */
+      padding-right: 1.5rem; /* From .sm\:px-6 */
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .attendance_tabular_view_box {
+      padding-left: 1rem; /* From .px-4 */
+      padding-right: 1rem; /* From .px-4 */
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .attendance_tabular_view_box {
+      padding-left: 2rem; /* From .lg\:px-8 */
+      padding-right: 2rem; /* From .lg\:px-8 */
+      max-width: 1024px; /* From .container */
+      margin-left: auto; /* Centering the container */
+      margin-right: auto; /* Centering the container */
+    }
+  }
+  
+  @media (min-width: 1280px) {
+    .attendance_tabular_view_box {
+      max-width: 1280px; /* From .container */
+    }
+  }
+  
+  @media (min-width: 1536px) {
+    .attendance_tabular_view_box {
+      max-width: 1536px; /* From .container */
+    }
+  }
+
+  .dates_row {
+    display: flex;              /* From .flex */
+    justify-content: space-between; /* From .justify-between */
+    align-items: center;        /* From .items-center */
+    margin-bottom: 20px;       /* From the element rule */
+    margin-top: 20px;
+  }
+  .dates_div {
+    text-align: center; /* From .text-center */
+    flex: 1 1 0%;      /* From .flex-1 */
+  }
+  .next_previous_link {
+    content: '\003c';          /* Unicode character for less than sign */
+    font-size: 23px;          /* Font size */
+    color: #717D7E;           /* Text color */
+    margin-right: 10px;       /* Right margin */
+    cursor: pointer;           /* Pointer cursor on hover */
+    text-decoration: inherit;  /* Inherit text decoration */
+    color: inherit;            /* Inherit text color */
+  }
+  .mr-4 {
+    margin-right: 1rem;
+  }
+  .ml-4 {
+    margin-left: 1rem;
+  }
+  .dates_range {
+    font-weight: 700;          /* From .font-bold */
+    font-size: 1.125rem;       /* From .text-lg */
+    line-height: 1.75rem;      /* From .text-lg */
+    margin-left: 1rem;         /* From .mx-4 */
+    margin-right: 1rem;        /* From .mx-4 */
+  }
+
+  .view_toggling_div {
+    display: flex;            /* From .flex */
+    align-items: flex-end;    /* From .items-end */
+  }
+
+  .calendar_view_form_button {
+    display: flex;                          /* From .view-button */
+    justify-content: center;                /* From .box-container */
+    align-items: center;                    /* From .box-container */
+    border: 1px solid #141414;              /* From .box-container */
+    padding: 5px;                           /* From .box-container */
+    cursor: pointer;             /* From button, [type="button"], [type="reset"], [type="submit"] */
+    background-color: transparent;          /* From button, [type="button"], [type="reset"], [type="submit"] */
+    background-image: none;                 /* From button, [type="button"], [type="reset"], [type="submit"] */
+    text-transform: none;                   /* From button, select */
+    font-family: inherit;                   /* From button, input, optgroup, select, textarea */
+    font-size: 100%;                        /* From button, input, optgroup, select, textarea */
+    font-weight: inherit;                   /* From button, input, optgroup, select, textarea */
+    line-height: inherit;                   /* From button, input, optgroup, select, textarea */
+    color: inherit;                         /* From button, input, optgroup, select, textarea */
+    margin: 0;                              /* From button, input, optgroup, select, textarea */
+    padding: 3px;                             /* From button, input, optgroup, select, textarea */
+  }
+  .calendar_view_form_button.active {
+    background-color: #e2e2e2;
+    color: white;
+  }
+
+  .button_image {
+    width: 1.5rem;                     /* From .w-6 */
+    height: 1.5rem;                    /* From .h-6 */
+    max-width: 100%;                   /* From img, video */
+    height: auto;                       /* From img, video */
+    display: block;                     /* From img, svg, video, canvas, audio, iframe, embed, object */
+  }
+
+
+  .attendance_table{   
+    min-width: 100%;
+    text-indent: 0;
+    border-color: 1px solid #d1d5db;
+    border-collapse: collapse;
+  }
+
+  .thead_attendance_table {
+    letter-spacing: .05em;                          /* From .tracking-wider */
+    line-height: 1rem;                              /* From .leading-4 */
+    text-transform: capitalize;                     /* From .capitalize */
+    font-weight: 400;                               /* From .font-normal */
+    font-size: .75rem;                              /* From .text-xs */
+    line-height: 1rem;                              /* From .text-xs */
+    text-align: center;                             /* From .text-center */
+    background-color: #f3f4f6; 
+    border-top: 1px solid #d1d5db;                /* Added to ensure borders are visible */
+    border-bottom: 1px solid #d1d5db;
+  }
+
+  .table_cell_value {
+    padding-top: .5rem; /* Equivalent to .py-2 */
+    padding-bottom: .5rem; /* Equivalent to .py-2 */
+    border: 1px solid rgb(209 213 219); /* Equivalent to .border-gray-300 */
+    font-size: .75rem; /* Applies to .text-xs */
+    line-height: 1rem; /* Applies to .text-xs */
+    text-align: center; /* Applies to .text-center */
+  }
+
+  .bg-yellow {
+    background-color: #ffe5a3;
+  }
+  .bg-green {
+    background-color: #b2d7ad;
+  }
+  .bg-red {
+    background-color: #e95b6d;
+  }
+
+  .status-container {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    margin-left: 12px;
+  }
+  .status-circle {
+    display: inline-block;
+    width: .60rem;
+    height: .60rem;
+    border-radius: 50%;
+  }
+  .status-text {
+    white-space: nowrap;
+  }
+
+ 
+    
+
+ 
+ 
