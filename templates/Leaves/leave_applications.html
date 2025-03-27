@@ -9,8 +9,7 @@
 
     {% include 'main_linkings.html' %}
     <link rel="stylesheet" href="{% static 'css/timesheet_overview.css' %}">
-    <script src="{% static 'js/filter_bar_timesheet_overview.js' %}"></script>
-    <link rel="stylesheet" href="{% static 'css/filter_bar_timesheet_overview.css' %}">
+    <script src="{% static 'js/leave_applications.js' %}"></script>
 </head>
 <body>
     {% include 'header.html' %}
@@ -18,6 +17,22 @@
         <div class="timesheet_container">
             <div>
                 <h2 class="timesheet_overview_h2">Leave Applications</h2>
+                
+                <form method="POST" class="leave_list_form_for_selecting_employee">
+                    {% csrf_token %}
+                    <select name="employee_select" id="employee_select">
+                        {% for employee in employees_list %}
+                            <option value="{{ employee.employee_id }}" {% if employee.employee_id == selected_employee.employee_id %} selected {% endif %} >
+                                {{ employee.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit"> Go </button>
+                </form>
+                <div class="whose_list_is_this">
+                    <p>{{ selected_employee }} </p>
+                </div>
+
 
                 <table id="overview_table_report" name="overview_table_report" class="overview_table_report">
                     <thead class="overview_table_head">
@@ -27,25 +42,31 @@
                             <th>Leave Genre</th>
                             <th>Status</th>
                             <th>Reason</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody class="overview_table_data" id="overview_table_data">
-                        {% for request in leave_requests %}
+                        {% for leave in leave_requests %}
                         <tr class="overview_table_tr">
                             <td class="overview_table_td">
-                                <b>{{ request.get_leave_type_display }}</b>
+                                <b>{{ leave.get_leave_type_display }}</b>
                             </td>
                             <td class="overview_table_td">
-                                {{ request.date }}
+                                {{ leave.date }}
                             </td>
                             <td class="overview_table_td text-right">
-                                {{ request.get_leave_genre_display }}
+                                {{ leave.get_leave_genre_display }}
                             </td>
                             <td class="overview_table_td text-right">
-                                {{ request.status }}
+                                {{ leave.status }}
                             </td>
                             <td class="overview_table_td text-right">
-                                {{ request.reason }}
+                                {{ leave.reason }}
+                            </td>
+                            <td class="overview_table_td">
+                                <button class="mybutton" onclick="gotothisurl('{% url 'edit_leave' leave_id=leave.id %}')" id="update_button" data-updateLeave-url="{% url 'edit_leave' leave_id=leave.id %}">
+                                    <img class="add_img_icon" src="{% static 'images/edit_icon.png' %}" alt="Edit">
+                                </button>
                             </td>
                         </tr>
                         {% empty %}

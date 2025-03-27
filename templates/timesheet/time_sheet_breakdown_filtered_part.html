@@ -17,7 +17,7 @@
             {{ row.total_hours_decimal }}
         </td>
         <td class="overview_table_td">
-            <button class="mybutton" onclick="gotoupdatetimeentry()" id="update_button" data-updateTimeEntry-url="{% url 'submit_time_entry' %}">
+            <button class="mybutton" onclick="gotothisurl('{% url 'update_time_entry' entry_id=row.id %}')" id="update_button" data-updateTimeEntry-url="{% url 'update_time_entry' entry_id=row.id %}">
                 <img class="add_img_icon" src="{% static 'images/edit_icon.png' %}" alt="Edit">
             </button>
         </td>

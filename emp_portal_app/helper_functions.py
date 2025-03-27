@@ -7,7 +7,7 @@ import calendar
 from django.utils.timezone import localtime, make_aware, get_default_timezone
 from django.utils import timezone
 from datetime import timedelta
-from .models import Attendance, CheckInOut
+from .models import Attendance, CheckInOut, Employee
 
 from emp_portal_app.models import CASUAL_LEAVE_QUARTERLY_COUNT, RH_YEARLY_COUNT, SHIFT_HOURS_IN_A_DAY, SICK_LEAVE_QUARTERLY_COUNT, LeaveRequest
 from django.db.models import Q
@@ -202,11 +202,13 @@ def get_the_break_down_total_data(time_entries,user,from_date_input,to_date_inpu
 
 
 
-def check_leave_conflicts(employee, date, leave_genre):
+def check_leave_conflicts(employee, date, leave_genre, exclude_id=-5):
     """
     Check if there is already a leave applied that conflicts with the new leave.
     """
     existing_leaves = LeaveRequest.objects.filter(employee=employee, date=date, status__in=['pending', 'approved'])
+    if (exclude_id!=-5):
+        existing_leaves = existing_leaves.exclude(id=exclude_id)
 
     if leave_genre == 'full_day' and existing_leaves.exists():
         return True  # Full day cannot overlap with any leave
@@ -219,7 +221,7 @@ def check_leave_conflicts(employee, date, leave_genre):
 
     return False  # No conflicts found
 
-def check_leave_balance(employee, leave_type, leave_date, leave_genre):
+def check_leave_balance(employee, leave_type, leave_date, leave_genre, exclude_id=-5):
     """
     Check if the employee has enough leave balance for the selected leave type.
     """
@@ -228,9 +230,12 @@ def check_leave_balance(employee, leave_type, leave_date, leave_genre):
 
     if leave_type == 'restricted':
         # Get total restricted holidays used this year
-        used_days = LeaveRequest.objects.filter(
-            employee=employee, leave_type='restricted', date__year=current_year,
-        ).count()
+        leaves = LeaveRequest.objects.filter(
+            employee=employee, leave_type='restricted', date__year=current_year, status__in=['pending', 'approved']
+        )
+        if (exclude_id!=-5):
+            leaves = leaves.exclude(id=exclude_id)
+        used_days= leaves.count()
 
         return used_days < RH_YEARLY_COUNT  # Ensure they haven't exceeded RH limit
 
@@ -272,6 +277,7 @@ def get_used_leave_days(employee, leave_type, start_date, end_date):
         employee=employee,
         leave_type=leave_type,
         date__range=(start_date, end_date),
+        status__in=['pending', 'approved']
     )
 
     total_days = 0
@@ -521,6 +527,7 @@ def calculate_attendance(employee, date):
     print("Checkincheckouts were found")
     first_check_in_utc = check_ins_outs.first().timestamp
     last_check_out_utc = check_ins_outs.last().timestamp
+    check_outs = check_ins_outs.filter(is_check_in=False)
     # Convert timestamps to IST
     first_check_in_ist = localtime(check_ins_outs.first().timestamp)  
     last_check_out_ist = localtime(check_ins_outs.last().timestamp) 
@@ -590,7 +597,7 @@ def calculate_attendance(employee, date):
     else:
         attendance_status = "present"
 
-
+    last_check_out_utc = check_outs.last().timestamp
     # Update attendance record
     attendance_found = Attendance.objects.filter(employee=employee, date=date).exists()
     if attendance_found:
@@ -639,8 +646,9 @@ def is_weekend(date, employee):
 
     return False
 
-def generate_attendance_list(start_date, end_date, employee):
+def generate_attendance_list(start_date, end_date, employee_id):
     attendance_list = []
+    employee = Employee.objects.get(employee_id=employee_id)
     
     # Generate a list of dates from start_date to end_date
     current_date = start_date
@@ -658,7 +666,52 @@ def generate_attendance_list(start_date, end_date, employee):
             item["last_out"] = last_check_out_ist.strftime("%H:%M") if attendance.last_check_out else None
             item["total_hours"] = convert(attendance.total_worked_seconds)
             item["payable_hours"] = item["total_hours"] if convert(attendance.total_worked_seconds) < "08:00" else "08:00"
-            item["status"] = attendance.get_attendance_status_display()
+
+            leave_on_this_date = LeaveRequest.objects.filter(employee=attendance.employee, date=attendance.date).first()
+            if attendance.attendance_status == 'absent':
+                if leave_on_this_date and leave_on_this_date.status != 'rejected':
+                    if leave_on_this_date.leave_genre == 'full_day':
+                        item["status"] = leave_on_this_date.get_leave_type_display()
+                    elif leave_on_this_date.leave_genre == 'first_half':
+                        item["status"] = "0.5 day " + leave_on_this_date.get_leave_type_display() + " 0.5 day Absent"
+                    elif leave_on_this_date.leave_genre == 'second_half':
+                        item["status"] = leave_on_this_date.get_leave_type_display()
+                else:
+                    item["status"] = "Absent"
+
+            elif attendance.attendance_status == 'first_half_present':
+                if leave_on_this_date and leave_on_this_date.status != 'rejected':
+                    if leave_on_this_date.leave_genre == 'full_day':
+                        item["status"] = "0.5 day Present 0.5 day " + leave_on_this_date.get_leave_type_display()
+                        leave_on_this_date.leave_genre = "second_half"
+                        leave_on_this_date.save()
+                    elif leave_on_this_date.leave_genre == 'first_half':
+                        item["status"] = "0.5 day Present 0.5 day Absent"
+                        leave_on_this_date.status = "rejected"
+                        leave_on_this_date.save()
+                    elif leave_on_this_date.leave_genre == 'second_half':
+                        item["status"] = "0.5 day Present 0.5 day " + leave_on_this_date.get_leave_type_display()
+                else:
+                    item["status"] = "0.5 day Present 0.5 day Absent"
+
+            elif attendance.attendance_status == 'second_half_present':
+                if leave_on_this_date and leave_on_this_date.status != 'rejected':
+                    if leave_on_this_date.leave_genre == 'full_day':
+                        item["status"] = "0.5 day " + leave_on_this_date.get_leave_type_display() + " 0.5 day Present"
+                        leave_on_this_date.leave_genre = "first_half"
+                        leave_on_this_date.save()
+                    elif leave_on_this_date.leave_genre == 'first_half':
+                        item["status"] = "0.5 day " + leave_on_this_date.get_leave_type_display() + " 0.5 day Present"
+                    elif leave_on_this_date.leave_genre == 'second_half':
+                        item["status"] = "0.5 day Absent 0.5 day Present"
+                        leave_on_this_date.status = "rejected"
+                        leave_on_this_date.save()
+                else:
+                    item["status"] = "0.5 day Absent 0.5 day Present"
+            else:
+                item["status"] = attendance.get_attendance_status_display()
+
+
         else:
             # No attendance object found, check if it's a weekend
             if is_weekend(current_date, employee):
@@ -669,12 +722,22 @@ def generate_attendance_list(start_date, end_date, employee):
                 item["payable_hours"] = "00:00"
                 item["status"] = "Weekend"
             else:
+                leave_on_this_date = LeaveRequest.objects.filter(employee=employee, date=current_date).first()
                 item["date"] = current_date
                 item["first_in"] = "00:00"
                 item["last_out"] = "00:00"
                 item["total_hours"] = "00:00"
                 item["payable_hours"] = "00:00"
                 item["status"] = "Absent"
+                if leave_on_this_date and leave_on_this_date.status != 'rejected':
+                    if leave_on_this_date.leave_genre == 'full_day':
+                        item["status"] = leave_on_this_date.get_leave_type_display()
+                    elif leave_on_this_date.leave_genre == 'first_half':
+                        item["status"] = "0.5 day " + leave_on_this_date.get_leave_type_display() + " 0.5 day Absent"
+                    elif leave_on_this_date.leave_genre == 'second_half':
+                        item["status"] = leave_on_this_date.get_leave_type_display()
+                else:
+                    item["status"] = "Absent"
         
         attendance_list.append(item)
         current_date += timedelta(days=1)  # Move to the next day

@@ -45,6 +45,15 @@ operations = {
             "Create Project Assignation": "project_assignation_create",
             "View Project Assignations any": "project_assignation_list",
         },
+        "Timesheet": {
+            "Submit Time Entry": "submit_time_entry",
+            "Timesheet Overview": "timesheet_overview",
+            "Timesheet Breakdown": "timesheet_breakdown",
+        },
+        "Leave":{
+            "Apply Leave": "apply_leave",
+            "Leave Applications" : "leave_applications",
+        },
         "Attendance":{
             "Tabular View": "attendance_tabular_view",
         }

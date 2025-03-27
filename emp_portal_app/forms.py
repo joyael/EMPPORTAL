@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, date, timezone
 from django import forms
 from django.core.validators import MaxLengthValidator,MinValueValidator, RegexValidator
 
@@ -251,8 +251,10 @@ class ProjectAssignationForm(forms.ModelForm):
         start_date = cleaned_data.get('start_date')
         end_date = cleaned_data.get('end_date')
         employee = cleaned_data.get('employee')
+        instance=self.instance
 
         pas = ProjectAssignation.objects.filter(employee=employee,project=project)
+        pas = pas.exclude(assign_id=instance.assign_id)
         for pa in pas:
             if check_overlap(pa.start_date,pa.end_date,start_date,end_date):
                 raise ValidationError('Same project and employee overlapping on the existing date range on a project assignation')
@@ -286,7 +288,11 @@ class TimesheetForm(forms.ModelForm):
 
         starting_choices=[
             ('nil','Select Project'),
+            ('bench','Bench'),
         ]
+        self.fields['project'].choices = starting_choices
+
+
         # Custom choices
         # custom_projects = [
         #     ('bench', 'Bench'),
@@ -300,7 +306,7 @@ class TimesheetForm(forms.ModelForm):
         #     for project in projects:
         #         project_choices.append((project.project_name, project.project_name))
         #     project_choices = project_choices + custom_projects
-        self.fields['project'].choices = starting_choices
+        
 
         # elif self.logged_in_user.level() == 2:
         #     assigned_projects = ProjectAssignation.objects.filter(assigning_manager=self.logged_in_user).values_list('project__project_name', flat=True)
@@ -332,6 +338,65 @@ class TimesheetForm(forms.ModelForm):
         seconds = cleaned_data.get('seconds', 0)
         employee = cleaned_data.get('employee')
 
+        if date > datetime.now().date():
+            raise forms.ValidationError("The date cannot be in the future.")
+        
+        if date and employee:
+            join_date = employee.join_date
+            if date < join_date:
+                raise forms.ValidationError("The timesheet entry date cannot be before the employee's join date.")
+
+        if hours == 0 and minutes == 0 and seconds == 0:
+            raise forms.ValidationError("Total time must be greater than zero.")
+        
+        total_time = hours + (minutes / 60) + (seconds / 3600)
+
+        if date:
+            existing_timesheets = Timesheet.objects.filter(date=date)
+            existing_total_time = sum(ts.hours + (ts.minutes / 60) + (ts.seconds / 3600) for ts in existing_timesheets)
+
+            if existing_total_time + total_time > TOTAL_HOURS_IN_A_DAY:
+                raise forms.ValidationError(f"Total time for {date} exceeds {TOTAL_HOURS_IN_A_DAY} hours.")
+
+        description = cleaned_data.get('description')
+        if description and len(description) > 1000:
+            raise forms.ValidationError("Description must be less than 1000 characters.")
+
+        return cleaned_data
+    
+class TimesheetUpdateForm(forms.ModelForm):
+    project = forms.ChoiceField(choices=[], required=True, widget=forms.Select(attrs={'class': 'form-control'}))
+    class Meta:
+        model = Timesheet
+        fields = ['date', 'project', 'hours', 'minutes', 'seconds', 'task_id', 'description']
+        widgets = {
+            'project': forms.Select(attrs={'class': 'form-control'}),
+            'date': forms.DateInput(attrs={'type': 'date'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        self.logged_in_user = kwargs.pop('logged_in_user', None)
+        super(TimesheetForm, self).__init__(*args, **kwargs)
+
+        starting_choices=[
+            ('nil','Select Project'),
+        ]
+        self.fields['project'].choices = starting_choices
+    def clean_project(self):
+        project = self.cleaned_data.get('project')
+        valid_projects = [project.project_name for project in Project.objects.all()] + ['bench', 'learning', 'training']
+        if project not in valid_projects:
+            raise forms.ValidationError("Invalid project. Please select a valid project or use 'bench', 'learning', or 'training'.")
+        return project
+
+    def clean(self):
+        cleaned_data = super().clean()
+        date = cleaned_data.get('date')
+        hours = cleaned_data.get('hours', 0)
+        minutes = cleaned_data.get('minutes', 0)
+        seconds = cleaned_data.get('seconds', 0)
+        employee = cleaned_data.get('employee')
+
         if date > datetime.timezone.now().date():
             raise forms.ValidationError("The date cannot be in the future.")
         
@@ -348,6 +413,7 @@ class TimesheetForm(forms.ModelForm):
         if date:
             existing_timesheets = Timesheet.objects.filter(date=date)
             existing_total_time = sum(ts.hours + (ts.minutes / 60) + (ts.seconds / 3600) for ts in existing_timesheets)
+            existing_total_time -= total_time
 
             if existing_total_time + total_time > TOTAL_HOURS_IN_A_DAY:
                 raise forms.ValidationError(f"Total time for {date} exceeds {TOTAL_HOURS_IN_A_DAY} hours.")
@@ -415,6 +481,7 @@ class EmployeeProfileUpdateForm(forms.ModelForm):
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
+        
         if not email:
             raise ValidationError("Email is required.")
         
@@ -422,10 +489,14 @@ class EmployeeProfileUpdateForm(forms.ModelForm):
         if not re.match(email_pattern, email):
             raise ValidationError("Please enter a valid email address.")
         
-        if Employee.objects.filter(email=email).exists():
-            raise ValidationError("This email is already in use.")
-        
+        instance = self.instance
+        the_other_employee =  Employee.objects.filter(email=email).exclude(employee_id=instance.employee_id).first()
+        if the_other_employee:
+            print(the_other_employee.employee_id)
+            print(instance.employee_id)
+            raise forms.ValidationError("An employee with this email already exists. BYE BYE")
         return email
+
 
     def clean_phone(self):
         phone = self.cleaned_data.get('phone')
@@ -440,33 +511,30 @@ class EmployeeProfileUpdateForm(forms.ModelForm):
         if self.logged_in_user and self.logged_in_user.level() > 1:
             self.fields['join_date'].widget.attrs['readonly'] = 'readonly'
 
-            # Fetch names properly
-            reporting_manager_name = self.instance.reporting_manager.name() if self.instance.reporting_manager else "Nil"
-            department_name = self.instance.department.department_name if self.instance.department else "Nil"
-
-            role_name = self.instance.get_role_display() if self.instance.role else "Nil"
-            position_name = self.instance.get_position_display() if self.instance.position else "Nil"
-
             self.fields['join_date'].disabled = True
             self.fields['reporting_manager'].disabled = True
             self.fields['role'].disabled = True
             self.fields['department'].disabled = True
             self.fields['position'].disabled = True
 
-            self.fields['reporting_manager'].widget = forms.TextInput(attrs={'value': reporting_manager_name, 'readonly': 'readonly'})
-            self.fields['role'].widget = forms.TextInput(attrs={'value': role_name, 'readonly': 'readonly'})
-            self.fields['department'].widget = forms.TextInput(attrs={'value': department_name, 'readonly': 'readonly'})
-            self.fields['position'].widget = forms.TextInput(attrs={'value': position_name, 'readonly': 'readonly'})
 
-            self.fields['reporting_manager'].initial = reporting_manager_name
-            self.fields['role'].initial = role_name
-            self.fields['department'].initial = department_name
-            self.fields['position'].initial = position_name
+            self.fields['join_date'].initial = self.instance.join_date
+            self.fields['reporting_manager'].initial = self.instance.reporting_manager
+            self.fields['role'].initial = self.instance.reporting_manager
+            self.fields['department'].initial = self.instance.department
+            self.fields['position'].initial = self.instance.position
 
-            print("Reporting Manager name:", reporting_manager_name)
-            print("Role:", role_name)
-            print("Department:", department_name)
-            print("Position:", position_name)
+            self.fields['join_date'].widget = forms.DateInput(attrs={'readonly': 'readonly',})
+            self.fields['reporting_manager'].widget = forms.TextInput(attrs={'readonly': 'readonly'})
+            self.fields['role'].widget = forms.TextInput(attrs={'readonly': 'readonly'})
+            self.fields['department'].widget = forms.TextInput(attrs={'readonly': 'readonly'})
+            self.fields['position'].widget = forms.TextInput(attrs={'readonly': 'readonly'})
+
+            self.fields['join_date'].required = False
+            self.fields['reporting_manager'].required = False
+            self.fields['role'].required = False
+            self.fields['department'].required = False
+            self.fields['position'].required = False
 
     def clean(self):
         cleaned_data = super().clean()

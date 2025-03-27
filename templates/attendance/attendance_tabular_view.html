@@ -51,7 +51,7 @@
                 <input id="current_month_start_date" name="current_month_start_date" value="{{  current_month_start_date  }}">
                 <input id="current_month_end_date" name="current_month_end_date" value="{{ current_month_end_date  }}">
                 <input id="current_month" name="current_month" value="{{ current_month  }}">
-                <input id="action_for_view" name="action_for_view" value="" data-attendance_tview-url = "{% url 'attendance_tabular_view' %}">
+                <input id="action_for_view" name="action_for_view" value="{{ action }}" data-attendance_tview-url = "{% url 'attendance_tabular_view' %}">
             </form>
             
             <table class="attendance_table" id="attendance_table">

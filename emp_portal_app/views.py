@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password
 from django.http import JsonResponse
+from django.template.loader import render_to_string
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.views import View
@@ -28,7 +29,6 @@ from django.contrib.auth.hashers import make_password
 
 from django.contrib.sessions.models import Session
 import json
-
 
 from allauth.socialaccount.models import SocialAccount
 
@@ -483,6 +483,9 @@ def project_assignation_create(request):
             if(level>1):
                 assignation.assigning_manager = manager
             assignation.save()
+            messages.success("Project assignation created")
+            if 'add_new' in request.POST:
+                return redirect('project_assignation_create')
             return redirect('project_assignation_list')
         else:
             print(form.errors)
@@ -515,6 +518,9 @@ def project_assignation_update(request, pk):
             if(int(level)>1):
                 assignation.assigning_manager = manager
             assignation.save()
+            messages.success("Project assignation updated")
+            if 'add_new' in request.POST:
+                return redirect('project_assignation_create')
             return redirect('project_assignation_list')
     else:
         form = ProjectAssignationForm(instance=assignation, logged_in_user=manager)
@@ -591,7 +597,7 @@ def project_assignation_list(request):
             assignations = assignations.filter(project=project)
         if date_input:
             print("DateInput is : "+date_input)
-            received_date = timezone.datetime.strptime(date_input, '%Y-%m-%d').date()
+            received_date = datetime.strptime(date_input, '%Y-%m-%d').date()
             assignations = assignations.filter(start_date__lte=received_date, end_date__gte=received_date)
 
         html_content =  render(request, 'assignations/project_assignations_filtered_part.html', {
@@ -643,7 +649,7 @@ def profile_view(request):
     level = user.level()
     operations1 = operations[str(level)]
 
-    sessions = Session.objects.filter(expire_date__gte=timezone.now())  # Active sessions
+    sessions = Session.objects.filter(expire_date__gte=datetime.now())  # Active sessions
     print(len(sessions))
     user_sessions = []
     for session in sessions:
@@ -681,6 +687,39 @@ def submit_time_entry(request):
         if form.is_valid():
             timesheet = form.save(commit=False)
             timesheet.employee = user
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
+            print("The employee is : ",user.name())
             selected_project = form.cleaned_data.get('project')
 
             if selected_project not in ['bench', 'training', 'learning']:
@@ -688,6 +727,22 @@ def submit_time_entry(request):
                 timesheet.project_real = project_instance
             
             timesheet.save()
+            print("The time_entry saved ")
+            print("the timesheet date is ", timesheet.date)
+            print("The time_entry saved ")
+            print("the timesheet date is ", timesheet.date)
+            print("The time_entry saved ")
+            print("the timesheet date is ", timesheet.date)
+            print("The time_entry saved ")
+            print("the timesheet date is ", timesheet.date)
+            print("The time_entry saved ")
+            print("the timesheet date is ", timesheet.date)
+            print("The time_entry saved ")
+            print("the timesheet date is ", timesheet.date)
+            print("The time_entry saved ")
+            print("the timesheet date is ", timesheet.date)
+
+            messages.success(request,"Time Entry Added ")
 
             if 'add_new' in request.POST:
                 return redirect('submit_time_entry')
@@ -702,6 +757,48 @@ def submit_time_entry(request):
         'level': level,
         'active_title': 'Timesheet',
         'page_paths': ['Timesheet', 'Submit Time Entry'],
+    })
+
+
+def update_time_entry(request, entry_id):
+    validate_user = role_required(request=request, permission_name="employee")
+    if isinstance(validate_user, JsonResponse):
+        return validate_user
+
+    user = get_current_user(request)
+    level = user.level()
+    operations1 = operations[str(level)]
+
+    # Retrieve the existing timesheet entry to be updated
+    timesheet_entry = get_object_or_404(Timesheet, id = entry_id)
+
+    if request.method == 'POST':
+        form = TimesheetForm(request.POST, instance=timesheet_entry, logged_in_user=user)
+        if form.is_valid():
+            timesheet = form.save(commit=False)
+            selected_project = form.cleaned_data.get('project')
+
+            if selected_project not in ['bench', 'training', 'learning']:
+                project_instance = get_object_or_404(Project, project_name=selected_project)
+                timesheet.project_real = project_instance
+            
+            timesheet.save()
+            messages.success(request, "Time entry updated successfully.")
+            return redirect('timesheet_breakdown')
+    else:
+        form = TimesheetForm(instance=timesheet_entry, logged_in_user=user)
+        date_of_time_entry = timesheet_entry.date.strftime('%Y-%m-%d')
+        project_of_time_entry = timesheet_entry.project
+
+    return render(request, 'timesheet/submit_time_entry.html', {
+        'form': form,
+        "date_of_time_entry": date_of_time_entry,
+        'project_of_time_entry': project_of_time_entry,
+        'action': 'Update',
+        'operations': operations1,
+        'level': level,
+        'active_title': 'Timesheet',
+        'page_paths': ['Timesheet', 'Update Time Entry'],
     })
 
 
@@ -928,6 +1025,41 @@ def timesheet_breakdown(request):
     to_date_input = today
     from_date_input = today - timedelta(days=15)
     time_entries = Timesheet.objects.filter(date__range=[from_date_input, to_date_input])
+    print("From date : ", from_date_input, "  To date : ",to_date_input)
+    print("From date : ", from_date_input, "  To date : ",to_date_input)
+    print("From date : ", from_date_input, "  To date : ",to_date_input)
+    print("From date : ", from_date_input, "  To date : ",to_date_input)
+    print("From date : ", from_date_input, "  To date : ",to_date_input)
+    print("From date : ", from_date_input, "  To date : ",to_date_input)
+    print("From date : ", from_date_input, "  To date : ",to_date_input)
+    print("From date : ", from_date_input, "  To date : ",to_date_input)
+    print("From date : ", from_date_input, "  To date : ",to_date_input)
+    print("From date : ", from_date_input, "  To date : ",to_date_input)
+    print("From date : ", from_date_input, "  To date : ",to_date_input)
+    print("From date : ", from_date_input, "  To date : ",to_date_input)
+    print("From date : ", from_date_input, "  To date : ",to_date_input)
+    print("From date : ", from_date_input, "  To date : ",to_date_input)
+    print("From date : ", from_date_input, "  To date : ",to_date_input)
+    print("From date : ", from_date_input, "  To date : ",to_date_input)
+    print("From date : ", from_date_input, "  To date : ",to_date_input)
+
+    print("Length of time_entries_first :", time_entries.count())
+    print("Length of time_entries_first :", time_entries.count())
+    print("Length of time_entries_first :", time_entries.count())
+    print("Length of time_entries_first :", time_entries.count())
+    print("Length of time_entries_first :", time_entries.count())
+    print("Length of time_entries_first :", time_entries.count())
+    print("Length of time_entries_first :", time_entries.count())
+    print("Length of time_entries_first :", time_entries.count())
+    print("Length of time_entries_first :", time_entries.count())
+    for time_entry in time_entries:
+        print("the time entry is : ", time_entry.description , " and employee is : ", time_entry.employee.name() )
+        print("the time entry is : ", time_entry.description , " and employee is : ", time_entry.employee.name() )
+        print("the time entry is : ", time_entry.description , " and employee is : ", time_entry.employee.name() )
+        print("the time entry is : ", time_entry.description , " and employee is : ", time_entry.employee.name() )
+        print("the time entry is : ", time_entry.description , " and employee is : ", time_entry.employee.name() )
+        print("the time entry is : ", time_entry.description , " and employee is : ", time_entry.employee.name() )
+        print("the time entry is : ", time_entry.description , " and employee is : ", time_entry.employee.name() )
 
 
     projects = set()
@@ -976,6 +1108,25 @@ def timesheet_breakdown(request):
         for pa in pas:
             projects.add(pa.project)
         time_entries = time_entries.filter(employee=employee)
+    
+
+    
+    print("Length of time_entries at last :", time_entries.count())
+    print("Length of time_entries at last :", time_entries.count())
+    print("Length of time_entries at last :", time_entries.count())
+    print("Length of time_entries at last :", time_entries.count())
+    print("Length of time_entries at last :", time_entries.count())
+    print("Length of time_entries at last :", time_entries.count())
+    print("Length of time_entries at last :", time_entries.count())
+    print("Length of time_entries at last :", time_entries.count())
+
+    for time_entry in time_entries:
+        print("the time entry is : ", time_entry.description)
+        print("the time entry is : ", time_entry.description)
+        print("the time entry is : ", time_entry.description)
+        print("the time entry is : ", time_entry.description)
+        print("the time entry is : ", time_entry.description)
+        print("the time entry is : ", time_entry.description)
         
     projects = list(projects)
     employees = list(employees)
@@ -1051,6 +1202,18 @@ def timesheet_breakdown(request):
         
         today = datetime.today().date()
         
+        print("From date : ", from_date_input, "  To date : ",to_date_input)
+        print("From date : ", from_date_input, "  To date : ",to_date_input)
+        print("From date : ", from_date_input, "  To date : ",to_date_input)
+        print("From date : ", from_date_input, "  To date : ",to_date_input)
+        print("From date : ", from_date_input, "  To date : ",to_date_input)
+        print("From date : ", from_date_input, "  To date : ",to_date_input)
+        print("From date : ", from_date_input, "  To date : ",to_date_input)
+        print("From date : ", from_date_input, "  To date : ",to_date_input)
+        print("From date : ", from_date_input, "  To date : ",to_date_input)
+        print("From date : ", from_date_input, "  To date : ",to_date_input)
+        print("From date : ", from_date_input, "  To date : ",to_date_input)
+
         # Set default values if any date input is missing
         if not from_date_input or not to_date_input:
             to_date_input = today
@@ -1066,6 +1229,37 @@ def timesheet_breakdown(request):
         
         # Start with all timesheet records
         time_entries = Timesheet.objects.all()
+
+        if level <= 1:
+            pass
+
+        elif level == 2:
+            #user is manager
+            manager = user
+            employees.add(manager)
+            employees_under_manager = Employee.objects.filter(reporting_manager=manager)
+            for emp in employees_under_manager:
+                employees.add(emp)
+            for employee in employees:
+                pas = ProjectAssignation.objects.filter(employee=employee)
+                for pa in pas:
+                    projects.add(pa.project)
+            project_assignations = ProjectAssignation.objects.filter(assigning_manager=manager)
+            for pa in project_assignations:
+                employees.add(pa.employee)
+            for employee in employees:
+                pas = ProjectAssignation.objects.filter(employee=employee)
+                for pa in pas:
+                    projects.add(pa.project)
+            time_entries = time_entries.filter(employee__in=employees)
+                    
+        elif level == 3:
+            employee = user
+            employees.add(employee)
+            pas = ProjectAssignation.objects.filter(employee=employee)
+            for pa in pas:
+                projects.add(pa.project)
+            time_entries = time_entries.filter(employee=employee)
         
         if employee_id != 'nil':
             print("employee_id is not nil")
@@ -1156,6 +1350,7 @@ def apply_leave(request):
     level = user.level()
     operations1 = operations[str(level)]
     
+    employee_name = user.name()
     if request.method == 'POST':
         form = LeaveRequestForm(request.POST)
         if form.is_valid():
@@ -1183,6 +1378,7 @@ def apply_leave(request):
                 leave_request.employee = employee
                 leave_request.status = 'pending'
                 leave_request.save()
+                messages.success(request,"Leave Applied")
                 return redirect('leave_applications')
         else:
             print(form.errors)
@@ -1192,6 +1388,7 @@ def apply_leave(request):
     remaining_leave_data = get_remaining_leave_data(user)
     return render(request, 'Leaves/leave_form.html', {
         'form': form,
+        'employee_name':employee_name,
         'remaining_leave_data':remaining_leave_data,
         'action':'Apply',
         'operations': operations1,
@@ -1199,6 +1396,128 @@ def apply_leave(request):
         'active_title':'Leave Apply',
         'page_paths':['Leave','Leave Apply'],
     })
+
+
+def edit_leave(request, leave_id):
+    validate_user = role_required(request=request, permission_name="employee")
+    if isinstance(validate_user, JsonResponse):
+        return validate_user
+
+    user = get_current_user(request)
+    level = user.level()
+    operations1 = operations[str(level)]
+
+    # Retrieve the leave request to be edited
+    leave_request = get_object_or_404(LeaveRequest, id=leave_id)
+    employee_name = leave_request.employee.name()
+
+    if request.method == 'POST':
+        form = LeaveRequestForm(request.POST, instance=leave_request)
+        if form.is_valid():
+            date = form.cleaned_data['date']
+            leave_type = form.cleaned_data['leave_type']
+            leave_genre = form.cleaned_data['leave_genre']
+            validation_passed = True
+
+            # 1. Check for conflicts with existing leaves, excluding the current leave request
+            conflict_exists = check_leave_conflicts(user, date, leave_genre, exclude_id=leave_request.id)
+            if conflict_exists:
+                messages.error(request, "You already have a conflicting leave on this date.")
+                validation_passed = False
+
+            # 2. Check leave limits for restricted holiday, casual, and sick leaves
+            if leave_type in ['casual', 'sick', 'restricted']:
+                if not check_leave_balance(user, leave_type, date, leave_genre, exclude_id=leave_request.id):
+                    messages.error(request, f"You have exceeded the allowed {leave_type} leave quota for this period.")
+                    validation_passed = False
+
+            # If validation passes, save the leave request
+            if validation_passed:
+                leave_request = form.save(commit=False)
+                leave_request.status = 'pending'  # or keep the existing status if needed
+                leave_request.save()
+                messages.success(request,"Leave Updated")
+                return redirect('leave_applications')
+        else:
+            print(form.errors)
+            messages.error(request, "Submitted form is invalid")
+    else:
+        form = LeaveRequestForm(instance=leave_request)
+
+    remaining_leave_data = get_remaining_leave_data(user)
+    return render(request, 'Leaves/leave_form.html', {
+        'form': form,
+        'employee_name':employee_name,
+        'remaining_leave_data': remaining_leave_data,
+        'action': 'Update',
+        'leave':leave_request,
+        'operations': operations1,
+        'level': level,
+        'active_title': 'Edit Leave',
+        'page_paths': ['Leaves', 'Edit Leave'],
+    })
+
+
+def cancel_leave(request, leave_id):
+    validate_user = role_required(request=request, permission_name="employee")
+    if isinstance(validate_user, JsonResponse):
+        return validate_user
+    user = get_current_user(request)
+    print("Leaeve id is : ",leave_id)
+    print("Leaeve id is : ",leave_id)
+    print("Leaeve id is : ",leave_id)
+    print("Leaeve id is : ",leave_id)
+    print("Leaeve id is : ",leave_id)
+    print("Leaeve id is : ",leave_id)
+    leave_request = get_object_or_404(LeaveRequest, id=leave_id)
+    if leave_request:
+        leave_request.delete()
+        messages.success(request, "Leave Cancelled")
+        return redirect('leave_applications')
+    else:
+        messages.error(request, "Leave not found")
+        return redirect('leave_applications')
+
+def approve_leave(request, leave_id):
+    validate_user = role_required(request=request, permission_name="manager")
+    if isinstance(validate_user, JsonResponse):
+        return validate_user
+    user = get_current_user(request)
+    leave_request = get_object_or_404(LeaveRequest, id=leave_id)
+    
+    if leave_request:
+        if user.level() == 2:
+            if leave_request.employee.reporting_manager!=user:
+                messages.error(request,"Not found as reporting manager")
+                return redirect('leave_applications')
+        leave_request.status = 'approved'
+        leave_request.save()
+        messages.success(request,"Leave Approved")
+        return redirect('leave_applications')
+    else:
+        messages.error(request,"Leave not found")
+        return redirect('leave_applications')
+
+def reject_leave(request, leave_id):
+    validate_user = role_required(request=request, permission_name="manager")
+    if isinstance(validate_user, JsonResponse):
+        return validate_user
+    user = get_current_user(request)
+    leave_request = get_object_or_404(LeaveRequest, id=leave_id)
+    
+    if leave_request:
+        if user.level() == 2:
+            if leave_request.employee.reporting_manager!=user:
+                messages.error(request,"Not found as reporting manager")
+                return redirect('leave_applications')
+        leave_request.status = 'rejected'
+        leave_request.save()
+        messages.success(request,"Leave Rejected")
+        return redirect('leave_applications')
+    else:
+        messages.error(request,"Leave not found")
+        return redirect('leave_applications')    
+
 
 def leave_applications(request):
     validate_user = role_required(request=request, permission_name="employee")
@@ -1211,6 +1530,37 @@ def leave_applications(request):
 
     # Fetch leave applications for the logged-in user
     leave_requests = LeaveRequest.objects.filter(employee=user)
+    user_is_the_employee = True
+    
+    if user.level()<=1:
+        employees_list = Employee.objects.all()
+    else:
+        employees_list = Employee.objects.filter(reporting_manager = user)
+    employees_list = list(employees_list)
+    employees_list.append(user)
+
+    selected_employee = user
+    if request.method=='POST':
+        employee_id = request.POST["employee_select"]
+        try:
+            employee = Employee.objects.get(employee_id=employee_id)
+        except Employee.DoesNotExist:
+            messages.error(request, "Employee not exists")
+        if employee==user:
+            leave_requests = LeaveRequest.objects.filter(employee=employee)
+        else:
+            if user.level() <= 2:
+                if employee.reporting_manager == user or (user.level()<=1):
+                    leave_requests = LeaveRequest.objects.filter(employee=employee)
+                    selected_employee = employee
+                    user_is_the_employee = False
+                else:
+                    messages.error(request, "Employee not accessible")
+            else:
+                messages.error(request, "Employee not accessible ")
+
+                
+
 
     item_list = leave_requests  # Get all data
     page_number = request.GET.get('page', 1)  # Get the page number
@@ -1231,6 +1581,10 @@ def leave_applications(request):
 
     # Render the leave applications in a template
     return render(request, 'Leaves/leave_applications.html', {
+        'employee':user,
+        'selected_employee': selected_employee,
+        'employees_list':employees_list,
+        'user_is_the_employee':user_is_the_employee,
         'leave_requests': paginated_items,
         'items':items,
         'operations': operations1,
@@ -1278,8 +1632,7 @@ def get_projects(request):
                 start_date__lte=selected_date,  # start_date should be before or equal to selected_date
                 end_date__gte=selected_date  # end_date should be after or equal to selected_date
             ).values_list('project__project_name', flat=True)
-
-            
+            assigned_projects = set(assigned_projects)
             project_choices = [(project, project) for project in assigned_projects] + custom_projects
 
         else:
@@ -1353,12 +1706,14 @@ def profile_update(request):
     operations1 = operations[str(level)]
     
     if request.method == 'POST':
-        form = EmployeeProfileUpdateForm(request.POST,logged_in_user=user)
+        form = EmployeeProfileUpdateForm(request.POST,instance=user,logged_in_user=user)
         if form.is_valid():
             form.save()
+            messages.success(request,"Profile Updated")
         else:
             print(form.errors)
             messages.error(request, "submitted form is invalid")
+        return redirect(profile_view)
     else:
         form = EmployeeProfileUpdateForm(instance=user,logged_in_user=user)
         reporting_manager_name = user.reporting_manager.name() if user.reporting_manager else "Nil"
@@ -1514,18 +1869,27 @@ def attendance_tabular_view(request):
     else:
         end_date_of_month = datetime(today.year, today.month + 1, 1) - timedelta(days=1)
     end_date_of_month = end_date_of_month.date()
-    data = generate_attendance_list(start_date_of_week,end_date_of_week, user)
+    print("The Employee is : ", user.name())
+    print("The Employee is : ", user.name())
+    print("The Employee is : ", user.name())
+    print("The Employee is : ", user.name())
+    print("The Employee  ID is : ", user.employee_id)
+
+    data = generate_attendance_list(start_date_of_week,end_date_of_week, user.employee_id)
     
 
     if request.method == "POST":
-        user = request.user
         action = request.POST.get("action_for_view")
         week_or_month = request.POST.get("week_or_month")
+        start_date_of_week = request.POST.get("current_week_start_date")
+        end_date_of_week = request.POST.get("current_week_end_date")
+        start_date_of_month = request.POST.get("current_month_start_date")
+        month = request.POST.get("current_month")
 
         today = datetime.now()
 
         if week_or_month == "week":
-            start_date_of_week = datetime.strptime(request.POST.get("current_week_start_date"), "%Y-%m-%d")
+            start_date_of_week = datetime.strptime(request.POST.get("current_week_start_date"), "%B %d, %Y")
             if action == "next":
                 start_date_of_week += timedelta(days=7)
             elif action == "previous":
@@ -1533,6 +1897,7 @@ def attendance_tabular_view(request):
             start_of_week_timestamp = start_date_of_week
             end_of_week_timestamp = start_of_week_timestamp + timedelta(days=6)
             end_date_of_week = end_of_week_timestamp.date()
+            start_date_of_week = start_of_week_timestamp.date()
 
             month_data = majority_month(start_date_of_week, end_date_of_week)
             month = month_data["month_name"]
@@ -1540,7 +1905,7 @@ def attendance_tabular_view(request):
             end_date_of_month = month_data["month_end_date"]
 
         else:  # month
-            start_date_of_month = datetime.strptime(request.POST.get("current_month_start_date"), "%Y-%m-%d")
+            start_date_of_month = datetime.strptime(request.POST.get("current_month_start_date"), "%B %d, %Y")
             if action == "next":
                 next_month = start_date_of_month.month + 1 if start_date_of_month.month < 12 else 1
                 year = start_date_of_month.year if next_month > 1 else start_date_of_month.year + 1
@@ -1552,30 +1917,61 @@ def attendance_tabular_view(request):
 
             start_date_of_month = datetime.combine(start_date_of_month, datetime.min.time())
             end_date_of_month = (datetime(start_date_of_month.year, start_date_of_month.month + 1, 1) - timedelta(days=1)).date()
+            start_date_of_month = start_date_of_month.date()
             month = start_date_of_month.strftime("%B")
 
             start_month_timestamp = datetime.combine(start_date_of_month, datetime.min.time())
 
-            start_date_of_week = today - timedelta(days=start_month_timestamp.weekday())  # Reset week values
-            end_date_of_week = start_date_of_week + timedelta(days=6)
+            start_date_of_week_timestamp = start_month_timestamp - timedelta(days=start_month_timestamp.weekday())
+            start_date_of_week = start_date_of_week_timestamp.date()
+            end_date_of_week = (start_date_of_week_timestamp + timedelta(days=6)).date()
 
-        if action in ["change_to_month", "change_to_week"]:
-            week_or_month = "month" if action == "change_to_month" else "week"
+        if action in ["month", "week"]:
+            if action == "month" :
+                week_or_month = "month" 
+            elif action == "week" :
+                week_or_month = "week"
+            else:
+                pass
+        if week_or_month == "month":
+            start_date = start_date_of_month
+            end_date = end_date_of_month
+        else:
+            start_date = start_date_of_week
+            end_date = end_date_of_week
 
         # Fetch updated attendance list
-        data = generate_attendance_list(start_date_of_week, end_date_of_week, user)
+        data = generate_attendance_list(start_date, end_date, user.employee_id)
 
-        return render(request, "attendance/attendance_tabular_view.html", {
-            "user": user,
+        week_start = start_date_of_week
+        week_end = end_date_of_week
+
+        start_date_of_week = start_date_of_week.strftime("%B %d, %Y")
+        end_date_of_week = end_date_of_week.strftime("%B %d, %Y")
+        start_date_of_month = start_date_of_month.strftime("%B %d, %Y")
+        end_date_of_month =  end_date_of_month.strftime("%B %d, %Y")
+        action = "idle"
+
+        rendered_html = render_to_string("attendance/attendance_tabular_changed_view.html", {
             "attendance_list": data,
             "week_or_month": week_or_month,
             "current_week_start_date": start_date_of_week,
             "current_week_end_date": end_date_of_week,
             "current_month_start_date": start_date_of_month,
             "current_month_end_date": end_date_of_month,
+            "week_start":week_start,
+            "week_end":week_end,
             "current_month": month,
+            "action" : action,
         })
 
+        # Prepare the response data
+        response_data = {
+            "html": rendered_html,
+        }
+
+        # Return a JSON response with the rendered HTML
+        return JsonResponse(response_data)
 
     return render(request, 'attendance/attendance_tabular_view.html', {
         'user':user,
@@ -1589,14 +1985,8 @@ def attendance_tabular_view(request):
         'current_week_end_date' : end_date_of_week,
         'current_month_start_date' : start_date_of_month,
         'current_month_end_date' : end_date_of_month,
+        'week_start': start_date_of_week,
+        'week_end' : end_date_of_week,
         'current_month' : month,
+        'action':"idle",
     })
-
-
-
-def change_to_month_view(request):
-    validate_user = role_required(request=request, permission_name="employee")
-    if isinstance(validate_user, JsonResponse):
-        return validate_user
-    user = get_current_user(request)
-    

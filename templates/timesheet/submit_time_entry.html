@@ -22,6 +22,7 @@
         <div id="errorbox"></div>
         <form method="post" id="employeeForm" data-fetchProjects-url="{% url 'get_projects' %}">
             {% csrf_token %}
+
             {{ form.as_p }}
 
             <div class="buttons-div">
@@ -31,7 +32,12 @@
                     <button type="submit" class="mybutton" name="add_new" value="true">Save and Add New</button>
                 {% endif %}
             </div>
+            
 
+        </form>
+        <form style="display:none;">
+            <input id="date_of_time_entry" value="{{ date_of_time_entry }}">
+            <input id="project_of_time_entry" value="{{ project_of_time_entry }}">
         </form>
         </div>
         </div>

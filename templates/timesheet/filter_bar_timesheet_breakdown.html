@@ -15,7 +15,7 @@
             To Date
         </div>
         <div>
-            <input type="date" id="todateforfilter" name="todateforfilter" value="{{todateInputValue}}">
+            <input type="date" id="todateforfilter" name="todateforfilter" value="{{ todateInputValue }}">
         </div>
     </div>
 
@@ -59,14 +59,12 @@
 
     
 
-    
-
     <form id="myFormForFilter" style="display: none;" method="post">
         {% csrf_token %}
         <input type="text" name="employee_id" id="employee_id" value="nil" hidden>
         <input type="text" name="project_id" id="project_id" value="nil" hidden>
-        <input type="date" name="fromdateInput" id="fromdateInput" value="" hidden>
-        <input type="date" name="todateInput" id="todateInput" value="" hidden>
+        <input type="date" name="fromdateInput" id="fromdateInput" value="{{ fromdateInputValue }}" hidden>
+        <input type="date" name="todateInput" id="todateInput" value="{{ todateInputValue }}" hidden>
     </form>
 
     <div class="filter_search_button_div filter_one_div">

@@ -104,5 +104,18 @@
     cursor: pointer;
 }
 
+.employee_name {
+    font-size: 14px; 
+    color: #333; 
+    margin: 10px 0;
+}
 
+.employee_name span {
+    display: inline;
+}
+
+.employee_name span:first-child {
+    font-weight: bold;
+    margin-right: 5px;
+}
 

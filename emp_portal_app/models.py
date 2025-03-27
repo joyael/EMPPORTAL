@@ -212,8 +212,7 @@ class Timesheet(models.Model):
         total_hours = self.hours + (self.minutes / 60) + (self.seconds / 3600)
         num = round(total_hours, 2)
         float_num = format(num, ".2f")
-        return float_num 
-    
+        return float_num
 
 RH_YEARLY_COUNT = 2
 CASUAL_LEAVE_QUARTERLY_COUNT = 3

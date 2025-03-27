@@ -16,7 +16,9 @@
     <div class="container mt-5">
         <div class="leaveformcontainer">
         <div class="leaveformbox">
-            <div class="title-box">{{ action }} Leave </div>
+
+        <div class="title-box">{{ action }} Leave </div>
+        <div class="employee_name"> <span>Employee name : </span> <span> {{ employee_name }} </span> </div>
 
         <div id="errorbox"></div>
         <form method="post" id="employeeForm">
@@ -26,6 +28,14 @@
             <div class="buttons-div">
                 <button type="submit" class="mybutton">{{ action }}</button>
                 <button type="button" class="mybutton" onclick="gotoleavelist()" data-leavelist-url="{% url 'leave_applications' %}" id="cancel_button">Cancel</button>
+                {% if action == 'Update' %}
+                    {% if level <= 2 %}
+                        <button type="button" class="mybutton" onclick="gotoapproveleave()" data-approveleave-url="{% url 'approve_leave' leave_id=leave.id %}" id="approve_leave_button">Approve</button>
+                        <button type="button" class="mybutton" onclick="gotorejectleave()" data-rejectleave-url="{% url 'reject_leave' leave_id=leave.id %}" id="reject_leave_button">Reject</button>
+                    {% else %}
+                        <button type="button" class="mybutton" onclick="gotocancel()" data-cancelleave-url="{% url 'cancel_leave' leave_id=leave.id %}" id="cancel_leave_button">Cancel</button>
+                    {% endif %}
+                {% endif %}
             </div>
         </form>
         </div>

@@ -3,6 +3,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const buttons = document.querySelectorAll('.filter_select_button');
     const inputs = document.querySelectorAll('.filter_input');
 
+        const fromdateInputI = document.getElementById('fromdateInput');
+        const todateInputI = document.getElementById('todateInput');
+
+        const filterDateInputfrom = document.getElementById('fromdateforfilter');
+        const filterDateInputto = document.getElementById('todateforfilter');
+
+        filterDateInputfrom.value = '';
+        filterDateInputto.value = '';
+        
+        filterDateInputfrom.value = fromdateInputI.value;
+        filterDateInputto.value =  todateInputI.value;
+
     const filters = [];
     // Function to add a student
     function addFilter(button, dropdown, input, form_input) {
@@ -251,4 +263,8 @@ function gotoupdatetimeentry() {
     var button = document.getElementById('update_button');
     var updateTimeEntryUrl = button.getAttribute('data-updateTimeEntry-url');
     window.location.href = updateTimeEntryUrl;
+}
+
+function gotothisurl(url){
+    window.location.href = url;
 }

@@ -42,12 +42,18 @@ urlpatterns = [
     path('getname',getname, name='getname'),
 
     path('timesheet/create/', submit_time_entry, name='submit_time_entry'),
+    path('timesheet/update/<int:entry_id>/', update_time_entry, name='update_time_entry'),
     path('timesheet/timesheet_overview', timesheet_overview, name='timesheet_overview'),
     path('timesheet/timesheet_breakdown', timesheet_breakdown, name='timesheet_breakdown'),
     path('timesheet/get_projects', get_projects, name='get_projects'),
 
     path('leaves/apply/', apply_leave, name='apply_leave'),
     path('leave-applications/', leave_applications, name='leave_applications'),
+    path('leaves/edit/<int:leave_id>/', edit_leave, name='edit_leave'),
+    path('leaves/approve/<int:leave_id>/', approve_leave, name='approve_leave'),
+    path('leaves/reject/<int:leave_id>/', reject_leave, name='reject_leave'),
+    path('leaves/cancel/<int:leave_id>/', cancel_leave, name='cancel_leave'),
+
 
     path('employees/profile_update/', profile_update, name='profile_update'),
     path('password_update', password_update, name='password_update'),

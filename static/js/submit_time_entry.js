@@ -61,7 +61,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const today = new Date();
     const formattedDate = today.toISOString().split('T')[0]; // Format date as YYYY-MM-DD
+
     dateInput.setAttribute('max', formattedDate);
+    
+
 
     // dateInput.addEventListener('change', function() {
     //     const selectedDate = new Date(dateInput.value);
@@ -122,6 +125,20 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     dateInput.addEventListener('change', fetchProjects);
+    const date_of_time_entry = document.getElementById('date_of_time_entry');
+    const project_of_time_entry = document.getElementById('project_of_time_entry');
+    console.log("Date of the time entry found is : ", date_of_time_entry.value)
+    console.log("Project of the time entry found is : ", project_of_time_entry.value)
+    dateInput.value = date_of_time_entry.value;
+    fetchProjects();
+    const selectElement = document.getElementById("id_project");
+    for (let i = 0; i < selectElement.options.length; i++) {
+        const option = selectElement.options[i];
+        if (option.value === project_of_time_entry.value) {
+            option.selected = true; // Set the option as selected
+            break; // Exit the loop once the option is found
+        }
+    }
 
     // Function to get CSRF token (if needed)
     function getCookie(name) {
