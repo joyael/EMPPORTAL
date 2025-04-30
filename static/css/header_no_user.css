@@ -1,0 +1,76 @@
+/* Header Styles */
+.header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 30px;
+    background-color: #ffffff;
+    position: relative;
+    z-index: 10;
+    flex-wrap: wrap;
+    border-bottom: 1px solid #f2f2f2;
+}
+
+.logo-for-login {
+    flex: 0 0 auto;
+}
+
+.logo-image {
+    height: 55px;
+    width: auto;
+}
+
+.header-title {
+    flex: 1;
+    text-align: center;
+    padding: 0 20px;
+}
+
+.header-nav {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: #266D9C;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: color 0.3s ease-in-out;
+    padding: 5px 10px;
+    border: 1px solid #266D9C;
+    margin: 5px 20px;
+}
+
+.nav-link:hover {
+    color: #E86A27;
+    border-color: #E86A27;
+}
+
+/* Gradient Text */
+.gradient-text {
+    background: linear-gradient(90deg, #E86A27, #72BE44, #266D9C);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text; /* Firefox */
+    color: transparent;
+    font-size: 1.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    animation: gradientShift 3s ease infinite;
+}
+
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}

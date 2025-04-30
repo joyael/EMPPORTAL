@@ -1,0 +1,32 @@
+{% load static %}
+{% for c in check_in_outs %}
+<div class="each_check_in_out_div">
+    
+    <div class="list_icon_div">
+        <svg class="square_size" mt-4="" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="16" cy="16" r="16" fill="white" stroke="#454647"></circle>
+        <g transform="translate(4, 4)">
+            <path d="M12 3V21M3 12H21" stroke="#454647" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+        </g>
+        </svg>
+    </div>
+    
+        
+    <div class="check_in_out_data_div">
+        <p class="log_check_in_out_time"> {{ c.time_display }} </p>
+        <p class="check_in_out_emp_or_div">
+            {{user.name}}
+            <span class="{% if c.is_check_in %}green_text_500{% else %}red_text_500{% endif %}">
+                {% if c.is_check_in %} checked in {% else %} checked out {% endif %}
+            </span>
+        </p>
+    </div>
+    
+</div>
+{% endfor %}
+
+<div class="the_date_of_check_in_out_div">
+    <h3 class="the_date_text">
+        {{ date_display }}
+    </h3>
+</div>

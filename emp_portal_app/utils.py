@@ -3,6 +3,8 @@ import jwt
 import datetime
 from django.conf import settings
 from .models import RefreshToken
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+
 
 def create_access_token(user):
     payload = {
@@ -48,3 +50,10 @@ def convert_to_decimal_hours(hours, minutes, seconds):
     decimal_seconds = seconds / 3600
     total_hours = hours + decimal_minutes + decimal_seconds
     return round(total_hours, 2)
+
+
+class CustomTokenGenerator(PasswordResetTokenGenerator):
+    def _make_hash_value(self, user, timestamp):
+        return f"{user.pk}{timestamp}{user.email}"
+
+token_generator = CustomTokenGenerator()

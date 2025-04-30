@@ -54,7 +54,6 @@ urlpatterns = [
     path('leaves/reject/<int:leave_id>/', reject_leave, name='reject_leave'),
     path('leaves/cancel/<int:leave_id>/', cancel_leave, name='cancel_leave'),
 
-
     path('employees/profile_update/', profile_update, name='profile_update'),
     path('password_update', password_update, name='password_update'),
 
@@ -65,4 +64,12 @@ urlpatterns = [
     path('shift_initializing_code/', shift_initializing_code, name='shift_initializing_code'),
 
     path('attendance/tabular_view', attendance_tabular_view,name='attendance_tabular_view'),
+    path('attendance/audit_history', attendance_audit_history,name='attendance_audit_history'),
+
+
+    path('reset-password/', password_reset_request, name='password_reset'),
+    path('reset-password-sent/', password_reset_sent, name='password_reset_sent'),
+    path('reset-password/<uidb64>/<token>/', password_reset_confirm, name='password_reset_confirm'),
+    path('reset-password-complete/', password_reset_complete, name='password_reset_complete'),
+
 ]

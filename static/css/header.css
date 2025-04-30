@@ -236,7 +236,7 @@ header {
     background-color:#d44;
 }
 .green_color{
-    background-color:green;
+    background-color:#27cda5;
 }
 
 .checkinbutton {
@@ -535,6 +535,11 @@ header {
         display: flex;
         position: relative;
         padding-right: 15px;
+    }
+}
+@media (min-width: 1024px) {
+    .menu > li > a {
+        
     }
 }
 

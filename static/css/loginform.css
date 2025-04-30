@@ -145,3 +145,25 @@
 .logo_for_login img{
     width:300px;
 }
+
+.quantum-forgot-button {
+    display: inline-block;
+    background-color: #ccc;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.quantum-forgot-button:hover {
+    background-color: #aaa; /* Darker pink on hover */
+    transform: translateY(-2px); /* Slight lift effect */
+}
+
+.quantum-forgot-button:active {
+    transform: translateY(0); /* Reset lift effect on click */
+}

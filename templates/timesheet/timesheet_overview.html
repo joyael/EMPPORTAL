@@ -168,6 +168,54 @@
                     </div>
                 </div>
 
+                <div class="btn-container">
+                    <button onclick="exportTableToCSV('timesheet.csv')"> Export as CSV </button>
+                    <button onclick="exportTableToExcel('timesheet.xlsx')"> Export as Excel </button>
+                </div>
+
+                <script>
+                    function exportTableToCSV(filename) {
+                        const csv = [];
+                        const rows = document.querySelectorAll("table tr");
+                    
+                        for (const row of rows) {
+                            const cols = row.querySelectorAll("td, th");
+                            const rowData = [];
+                            for (const col of cols) {
+                                // Escape commas inside data
+                                rowData.push('"' + col.innerText.replace(/"/g, '""') + '"');
+                            }
+                            csv.push(rowData.join(","));
+                        }
+                    
+                        // Download CSV
+                        const csvFile = new Blob([csv.join("\n")], { type: "text/csv" });
+                        const downloadLink = document.createElement("a");
+                        downloadLink.href = URL.createObjectURL(csvFile);
+                        downloadLink.download = filename;
+                        downloadLink.click();
+                    }
+                    
+                    function exportTableToExcel(filename) {
+                        const dataType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8';
+                        const tableSelect = document.getElementById('overview_table_report');
+                        const tableHTML = tableSelect.outerHTML.replace(/ /g, '%20');
+                    
+                        // Create download link
+                        const downloadLink = document.createElement("a");
+                        document.body.appendChild(downloadLink);
+                    
+                        if (navigator.msSaveOrOpenBlob) {
+                            const blob = new Blob(['\ufeff', tableHTML], { type: dataType });
+                            navigator.msSaveOrOpenBlob(blob, filename);
+                        } else {
+                            downloadLink.href = 'data:' + dataType + ', ' + tableHTML;
+                            downloadLink.download = filename;
+                            downloadLink.click();
+                        }
+                    }
+                </script>
+
 
             </div>
         </div>

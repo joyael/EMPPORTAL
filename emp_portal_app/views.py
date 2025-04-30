@@ -7,6 +7,12 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.views import View
 from django.utils import timezone
+
+from django.core.mail import send_mail
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+
+
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import jwt
 
@@ -15,11 +21,11 @@ from django.db.models import Q
 from EMPPORTAL import settings
 from emp_portal_app.auth import get_current_user, role_required
 from emp_portal_app.models import SHIFT_HOURS_IN_A_DAY, CheckInOut, Shift, default_working_days
-from .helper_functions import calculate_attendance, check_leave_balance, check_leave_conflicts, generate_attendance_list, get_dates, get_remaining_leave_data, get_the_break_down_total_data, get_the_overview_total_data, is_user_checked_in, majority_month, timesheeet_overview_data_extract
+from .helper_functions import calculate_attendance, check_leave_balance, check_leave_conflicts, generate_attendance_list, get_dates, get_remaining_leave_data, get_the_break_down_total_data, get_the_overview_total_data, is_user_checked_in, log_timings, majority_month, timesheeet_overview_data_extract
 from .operations_by_role import operations
 
 from .forms import *
-from .utils import create_access_token, check_refresh_token, create_refresh_token, insert_refresh_token, is_refresh_token_active, make_refresh_token_inactive
+from .utils import create_access_token, check_refresh_token, create_refresh_token, insert_refresh_token, is_refresh_token_active, make_refresh_token_inactive, token_generator
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
@@ -47,7 +53,7 @@ def refresh_token_view(request):
     if not refresh_token:
         return JsonResponse({'error': 'Refresh token not found'}, status=401)
     if check_refresh_token(refresh_token):
-        if not is_refresh_token_active:
+        if not is_refresh_token_active(refresh_token):
             return JsonResponse({'error': 'Refresh token Inactivated'}, status=401)
     try:
         payload = jwt.decode(refresh_token, settings.SECRET_KEY, algorithms=['HS256'])
@@ -57,6 +63,7 @@ def refresh_token_view(request):
         # Generate a new access token
         new_access_token = create_access_token(user)
         new_refresh_token = create_refresh_token(user)
+        insert_refresh_token(new_refresh_token)
 
         # Set the new access token as a cookie
         response = JsonResponse({'message': 'Access token refreshed successfully'})
@@ -135,7 +142,10 @@ def department_list(request):
     level = user.role
     operations1 = operations[level]
     departments = Department.objects.all()
-    return render(request, 'department_list.html', {'departments': departments, 'operations': operations1, 'level':int(level),'active_title':'Departments'})
+    return render(request, 'department_list.html', {
+        'departments': departments, 'operations': operations1, 'level':int(level),'active_title':'Departments',
+        'page_paths':['Departments','Department List']
+        })
 
 
 def department_create(request):
@@ -201,7 +211,7 @@ def employee_list(request):
     level = user.role
     operations1 = operations[level]
     employees = Employee.objects.all()
-    return render(request, 'employee_list.html', {'employees': employees, 'operations': operations1, 'level':int(level),'active_title':'Employees'})
+    return render(request, 'employee_list.html', {'employees': employees, 'operations': operations1, 'level':int(level),'active_title':'Employees','page_paths': ['Employees','Employee List'],})
 
 
 def employee_create(request):
@@ -219,7 +229,7 @@ def employee_create(request):
             return redirect('employee_list') 
     else:
         form = EmployeeForm()
-    return render(request, 'employee_form.html', {'form': form, 'action': 'Create', 'operations': operations1, 'level':int(level),'active_title':'Employees'})
+    return render(request, 'employee_form.html', {'form': form, 'action': 'Create', 'operations': operations1, 'level':int(level),'active_title':'Employees','page_paths': ['Employees','Employee Create'],})
 
 
 def employee_update(request, pk):
@@ -237,7 +247,7 @@ def employee_update(request, pk):
             return redirect('employee_list') 
     else:
         form = EmployeeForm(instance=employee)
-    return render(request, 'employee_form.html', {'form': form, 'action': 'Update', 'operations': operations1, 'level':int(level),'active_title':'Employees'})
+    return render(request, 'employee_form.html', {'form': form, 'action': 'Update', 'operations': operations1, 'level':int(level),'active_title':'Employees','page_paths': ['Employees','Employee Update'],})
 
 
 def employee_disable(request, pk):
@@ -256,7 +266,8 @@ def employee_disable(request, pk):
             return redirect('employee_list')  #Redirect to the employee list or another page
     else:
         form = EmployeeStatusForm(instance=employee)
-    return render(request, 'employee_disable_form.html', {'employee': employee,'form':form, 'operations': operations1, 'level':int(level),'active_title':'Employees'})
+    return render(request, 'employee_disable_form.html', {'employee': employee,'form':form, 'operations': operations1, 'level':int(level),'active_title':'Employees',
+        'page_paths': ['Employees','Employee Disable'],})
 
 
 
@@ -385,7 +396,7 @@ def project_list(request):
     level = user.role
     operations1 = operations[level]
     projects = Project.objects.all().order_by('created_at')
-    return render(request, 'projects/project_list.html', {'projects': projects, 'operations': operations1, 'level':int(level),'active_title':'Projects'})
+    return render(request, 'projects/project_list.html', {'projects': projects, 'operations': operations1, 'level':int(level),'active_title':'Projects','page_paths': ['Projects','Project List'],})
 
 def project_create(request):
     validate_user = role_required(request=request,permission_name="admin")
@@ -401,7 +412,7 @@ def project_create(request):
             return redirect('project_list')
     else:
         form = ProjectForm()
-    return render(request, 'projects/project_form.html', {'form': form, 'action': 'Create', 'operations': operations1, 'level':int(level),'active_title':'Projects'})
+    return render(request, 'projects/project_form.html', {'form': form, 'action': 'Create', 'operations': operations1, 'level':int(level),'active_title':'Projects','page_paths': ['Projects','Project Create'],})
 
 def project_update(request, pk):
     validate_user = role_required(request=request, permission_name="admin")
@@ -418,7 +429,7 @@ def project_update(request, pk):
             return redirect('project_list')
     else:
         form = ProjectForm(instance=project)
-    return render(request, 'projects/project_form.html', {'form': form, 'action': 'Update', 'operations': operations1, 'level': int(level),'active_title':'Projects'})
+    return render(request, 'projects/project_form.html', {'form': form, 'action': 'Update', 'operations': operations1, 'level': int(level),'active_title':'Projects','page_paths': ['Projects','Project Update'],})
 
 def project_delete(request, pk):
     validate_user = role_required(request=request,permission_name ="admin")
@@ -431,7 +442,7 @@ def project_delete(request, pk):
     if request.method == 'POST':
         project.delete()
         return redirect('project_list')
-    return render(request, 'projects/project_confirm_delete.html', {'project': project, 'operations': operations1, 'level':int(level),'active_title':'Projects'})
+    return render(request, 'projects/project_confirm_delete.html', {'project': project, 'operations': operations1, 'level':int(level),'active_title':'Projects','page_paths': ['Projects','Project Delete'],})
 
 def project_individual_view(request, pk):
     validate_user = role_required(request=request,permission_name="admin")
@@ -1024,6 +1035,8 @@ def timesheet_breakdown(request):
     today = datetime.today().date()
     to_date_input = today
     from_date_input = today - timedelta(days=15)
+    
+
     time_entries = Timesheet.objects.filter(date__range=[from_date_input, to_date_input])
     print("From date : ", from_date_input, "  To date : ",to_date_input)
     print("From date : ", from_date_input, "  To date : ",to_date_input)
@@ -1371,6 +1384,21 @@ def apply_leave(request):
                 if not check_leave_balance(employee, leave_type, date, leave_genre):
                     messages.error(request, f"You have exceeded the allowed {leave_type} leave quota for this period.")
                     validation_passed = False
+            
+            exclude_saturdays=True
+            if employee.position == '1':
+                exclude_saturdays=False
+
+            if date.weekday() == 6:  # Sunday
+                messages.error(request, "Selected date is a Sunday")
+                validation_passed = False
+            if exclude_saturdays and date.weekday() == 5:  # Saturday
+                messages.error(request, "Selected date is a Saturday")
+                validation_passed = False
+            if not exclude_saturdays and date.weekday() == 5:  # Saturday
+                if (date.day - 1) // 7 == 1:  # Second Saturday
+                    messages.error(request, "Selected date is a Second Saturday")
+                    validation_passed = False
 
             # If validation passes, save the leave request
             if validation_passed:
@@ -1379,6 +1407,10 @@ def apply_leave(request):
                 leave_request.status = 'pending'
                 leave_request.save()
                 messages.success(request,"Leave Applied")
+
+                #code for adding the leave to timsheet
+                create_leave_time_entry(request,leave_request)
+                
                 return redirect('leave_applications')
         else:
             print(form.errors)
@@ -1393,9 +1425,83 @@ def apply_leave(request):
         'action':'Apply',
         'operations': operations1,
         'level':level,
-        'active_title':'Leave Apply',
+        'active_title':'Leave',
         'page_paths':['Leave','Leave Apply'],
     })
+
+def create_leave_time_entry(request,leave_request):
+    hrs = 0
+    if leave_request.leave_genre == 'full_day':
+        hrs = 8
+    elif leave_request.leave_genre == 'first_half' or 'second_half':
+        hrs = 4
+    
+    date=leave_request.date
+    hours=hrs
+    minutes=0
+    seconds=0
+    description=leave_request.reason
+    project='leave hours'
+    employee = leave_request.employee
+    leave_id_entry = leave_request.id
+
+    try:
+        utc_now = datetime.now()
+        if date > utc_now.date():
+            raise ValidationError("time entry as date in future")
+
+        if date and employee:
+            join_date = employee.join_date
+            if date < join_date:
+                raise ValidationError("The timesheet entry date cannot be before the employee's join date.")
+
+        if hours == 0 and minutes == 0 and seconds == 0:
+            raise ValidationError("Total time must be greater than zero.")
+
+        # Calculate total time in hours
+        total_time = hours + (minutes / 60) + (seconds / 3600)
+
+        # Check for existing timesheets on the same date
+        if date:
+            existing_timesheets = Timesheet.objects.filter(date=date)
+            existing_total_time = sum(ts.hours + (ts.minutes / 60) + (ts.seconds / 3600) for ts in existing_timesheets)
+
+            # Ensure total time does not exceed daily limit
+            if existing_total_time + total_time > TOTAL_HOURS_IN_A_DAY:
+                raise ValidationError(f"Total time for {date} exceeds {TOTAL_HOURS_IN_A_DAY} hours.")
+
+        # Validate description length
+        if description and len(description) > 1000:
+            raise ValidationError("Description must be less than 1000 characters.")
+        
+        time_entry_leave = Timesheet.objects.filter(date=leave_request.date, employee=leave_request.employee, description=leave_request.reason).first()
+        if time_entry_leave:
+            raise ValidationError("Time entry already existing")
+
+        # Create the timesheet entry
+        obj = Timesheet.objects.create(
+            date=date,
+            hours=hours,
+            minutes=minutes,
+            seconds=seconds,
+            description=description,
+            project=project,
+            employee=employee,
+            leave_id_entry=leave_id_entry,
+        )
+        messages.success(request, 'Timesheet entry created successfully.')
+
+    except ValidationError as e:
+        # Handle validation errors
+        error_str=""
+        for error in e.messages:
+            error_str += error
+        return render(request,'test.html',{'error_str':error_str,})
+    except Exception as e:
+        # Handle any other exceptions
+        messages.error(request, f"An error occurred: {str(e)}")
+        error_str = str(e)
+        return render(request,'test.html',{'error_str':error_str,}) 
 
 
 def edit_leave(request, leave_id):
@@ -1436,6 +1542,23 @@ def edit_leave(request, leave_id):
                 leave_request = form.save(commit=False)
                 leave_request.status = 'pending'  # or keep the existing status if needed
                 leave_request.save()
+                if leave_request.id:
+                    hrs = 0
+                    if leave_request.leave_genre == 'full_day':
+                        hrs = 8
+                    elif leave_request.leave_genre == 'first_half' or leave_request.leave_genre == 'second_half':
+                        hrs = 4
+                    
+                    leave_entry = Timesheet.objects.filter(leave_id_entry=leave_request.id).first()
+                    if leave_entry:
+                        leave_entry.date = leave_request.date
+                        leave_entry.hours = hrs  # Assuming 'hours' is a field in Timesheet
+                        leave_entry.minutes = 0  # Assuming 'minutes' is a field in Timesheet
+                        leave_entry.seconds = 0  # Assuming 'seconds' is a field in Timesheet
+                        leave_entry.description = leave_request.description  # Assuming this is a field
+                        leave_entry.project = leave_request.project  # Assuming this is a field
+                        leave_entry.save()  # Save the updated leave entry
+                        messages.success(request, 'Time entry for leave is also updated')
                 messages.success(request,"Leave Updated")
                 return redirect('leave_applications')
         else:
@@ -1453,10 +1576,23 @@ def edit_leave(request, leave_id):
         'leave':leave_request,
         'operations': operations1,
         'level': level,
-        'active_title': 'Edit Leave',
+        'active_title': 'Leave',
         'page_paths': ['Leaves', 'Edit Leave'],
     })
 
+def delete_leave_time_entry(request,leave_request):
+    time_entry_leave = Timesheet.objects.filter(date=leave_request.date, employee=leave_request.employee, description=leave_request.reason).first()
+    if time_entry_leave:
+        time_entry_leave.delete()
+        messages.success(request, "Time entry also deleted")
+    else:
+        # messages.error(request, "Time entry with the leave not found")
+        error_str=""
+        error_str+="Time entry with the leave not found"
+        error_str+="Date : " + str(leave_request.date)
+        error_str+="Employee : " + str(leave_request.employee.name())
+        error_str+="Date : " + str(leave_request.reason)
+        return render(request,'test.html',{'error_str':error_str,})
 
 def cancel_leave(request, leave_id):
     validate_user = role_required(request=request, permission_name="employee")
@@ -1471,6 +1607,7 @@ def cancel_leave(request, leave_id):
     print("Leaeve id is : ",leave_id)
     leave_request = get_object_or_404(LeaveRequest, id=leave_id)
     if leave_request:
+        delete_leave_time_entry(request,leave_request)
         leave_request.delete()
         messages.success(request, "Leave Cancelled")
         return redirect('leave_applications')
@@ -1492,6 +1629,9 @@ def approve_leave(request, leave_id):
                 return redirect('leave_applications')
         leave_request.status = 'approved'
         leave_request.save()
+        time_entry_leave = Timesheet.objects.filter(date=leave_request.date, employee=leave_request.employee, description=leave_request.reason).first()
+        if not time_entry_leave:
+            create_leave_time_entry(request,leave_request)
         messages.success(request,"Leave Approved")
         return redirect('leave_applications')
     else:
@@ -1511,6 +1651,7 @@ def reject_leave(request, leave_id):
                 messages.error(request,"Not found as reporting manager")
                 return redirect('leave_applications')
         leave_request.status = 'rejected'
+        delete_leave_time_entry(request,leave_request)
         leave_request.save()
         messages.success(request,"Leave Rejected")
         return redirect('leave_applications')
@@ -1589,7 +1730,7 @@ def leave_applications(request):
         'items':items,
         'operations': operations1,
         'level':level,
-        'active_title':'Leave Applications',
+        'active_title':'Leave',
         'page_paths':['Leave','Leave Applications'],
     })
 
@@ -1731,7 +1872,7 @@ def profile_update(request):
         'action':'Update',
         'operations': operations1,
         'level':level,
-        'active_title':'Edit Profile',
+        'active_title':'Profile',
         'page_paths':['Profile','Edit Profile'],
     })
 
@@ -1990,3 +2131,100 @@ def attendance_tabular_view(request):
         'current_month' : month,
         'action':"idle",
     })
+
+def attendance_audit_history(request):
+    validate_user = role_required(request=request, permission_name="employee")
+    if isinstance(validate_user, JsonResponse):
+        return validate_user
+    user = get_current_user(request)
+    level = user.level()
+    operations1 = operations[str(level)]
+
+    today = datetime.now()
+    current_date = today
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        current_date_str = data.get('date')
+        current_date = datetime.strptime(current_date_str, "%Y-%m-%d").date()
+
+        check_in_outs = log_timings(user,current_date)
+
+        date_display = current_date.strftime("%A, %B %d, %Y")
+        current_date = current_date.strftime("%Y-%m-%d")
+        html_response = render_to_string('attendance/audit_history_filtered.html', {
+            'date_display' : date_display,
+            'current_date' : current_date,
+            'check_in_outs' : check_in_outs,
+            'user':user,
+        })
+        return JsonResponse({'html': html_response})
+
+    check_in_outs = log_timings(user,current_date)
+
+    date_display = current_date.strftime("%A, %B %d, %Y")
+    current_date = current_date.strftime("%Y-%m-%d")
+    return render(request, 'attendance/attendance_audit_history.html', {
+        'date_display':date_display,
+        'current_date':current_date,
+        'check_in_outs':check_in_outs,
+        'user':user,
+        'operations': operations1,
+        'level':level,
+        'active_title' : 'Attendance',
+        'page_paths': ['Attendance','Audit History'],
+    })
+
+
+
+def password_reset_request(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        try:
+            user = Employee.objects.get(email=email)
+            uid = urlsafe_base64_encode(force_bytes(user.employee_id))
+            token = token_generator.make_token(user)
+            reset_link = request.build_absolute_uri(
+                reverse('password_reset_confirm', kwargs={'uidb64': uid, 'token': token})
+            )
+            send_mail(
+                'Password Reset Request',
+                f'Click the link to reset your password: {reset_link}',
+                'your_email@gmail.com',
+                [email],
+                fail_silently=False,
+            )
+            return redirect('password_reset_sent')
+        except Employee.DoesNotExist:
+            messages.error(request, "No user found with that email.")
+    return render(request, 'password/password_reset_form.html')
+
+
+def password_reset_sent(request):
+    return render(request, 'password/password_reset_sent.html')
+
+
+
+def password_reset_confirm(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = Employee.objects.get(employee_id=uid)
+    except (TypeError, ValueError, OverflowError, Employee.DoesNotExist):
+        user = None
+
+    if user is not None and token_generator.check_token(user, token):
+        if request.method == 'POST':
+            password1 = request.POST.get('password1')
+            password2 = request.POST.get('password2')
+            if password1 == password2:
+                user.password = make_password(password1)  # Make sure to hash in real use!
+                user.save()
+                return redirect('password_reset_complete')
+            else:
+                messages.error(request, "Passwords do not match.")
+        return render(request, 'password/password_reset_confirm.html', {'validlink': True})
+    else:
+        return render(request, 'password/password_reset_confirm.html', {'validlink': False})
+    
+
+def password_reset_complete(request):
+    return render(request, 'password/password_reset_complete.html')

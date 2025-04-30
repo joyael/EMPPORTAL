@@ -612,12 +612,10 @@ def calculate_attendance(employee, date):
         attendance = Attendance.objects.create(
             employee=employee,
             date=date,
-            defaults={
-                "first_check_in": first_check_in_utc,
-                "last_check_out": last_check_out_utc,
-                "total_worked_seconds": total_worked_seconds,
-                "attendance_status": attendance_status,
-            }
+            first_check_in= first_check_in_utc,
+            last_check_out= last_check_out_utc,
+            total_worked_seconds= total_worked_seconds,
+            attendance_status= attendance_status,
         )
     return attendance
 
@@ -767,3 +765,36 @@ def majority_month(start_date, end_date):
         "month_start_date": month_start_date,
         "month_end_date": month_end_date,
     }
+
+
+
+def log_timings(employee,date):
+
+    today = date  
+    # Create naive datetime objects for 12:00 AM and 11:59 PM in IST
+    start_of_day_ist = datetime(today.year, today.month, today.day, 0, 0, 0)
+    end_of_day_ist = datetime(today.year, today.month, today.day, 23, 59, 59)
+
+    # Make these datetimes timezone-aware in the current Django timezone (IST)
+    start_of_day_aware = timezone.make_aware(start_of_day_ist)
+    end_of_day_aware = timezone.make_aware(end_of_day_ist)
+
+    # Convert them to UTC
+    start_of_day_utc = start_of_day_aware.astimezone(datetime_timezone.utc)
+    end_of_day_utc = end_of_day_aware.astimezone(datetime_timezone.utc)
+
+    check_ins_outs = CheckInOut.objects.filter(
+        employee=employee,
+        timestamp__gte=start_of_day_utc,  # Greater than or equal to start of today
+        timestamp__lte=end_of_day_utc,  # Less than or equal to end of today
+    )
+    output = []
+    for check_in_out in check_ins_outs:
+        d = dict()
+        check_in_ist = localtime(check_in_out.timestamp)
+        time_display = check_in_ist.strftime("%I:%M %p")
+        d['time_display']=time_display
+        d['is_check_in'] = check_in_out.is_check_in
+        output.append(d)
+
+    return output

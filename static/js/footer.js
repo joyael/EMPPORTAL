@@ -7,11 +7,11 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("bodyheight : "+bodyHeight+" , windowHeight: "+windowHeight);
 
         if (bodyHeight < windowHeight) {
-            console.log("bodyheight : "+bodyHeight+" , windowHeight: "+windowHeight);
+            // console.log("bodyheight : "+bodyHeight+" , windowHeight: "+windowHeight);
             footer.style.position = 'fixed';
-            footer.style.left = '0'; // Ensure the footer is aligned to the left
-            footer.style.right = '0'; // Ensure the footer is aligned to the right
-            footer.style.bottom = '0'; // Position the footer at the bottom
+            footer.style.left = '0'; 
+            footer.style.right = '0'; 
+            footer.style.bottom = '0'; 
         } 
         else {
             footer.style.position = 'static';

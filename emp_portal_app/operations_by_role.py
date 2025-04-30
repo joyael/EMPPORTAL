@@ -56,6 +56,7 @@ operations = {
         },
         "Attendance":{
             "Tabular View": "attendance_tabular_view",
+            "Audit History":"attendance_audit_history",
         }
     },
     "2": {
@@ -84,6 +85,7 @@ operations = {
         },
         "Attendance":{
             "Tabular View": "attendance_tabular_view",
+            "Audit History":"attendance_audit_history",
         }
     },
     "3": {
@@ -107,6 +109,7 @@ operations = {
         },
         "Attendance":{
             "Tabular View": "attendance_tabular_view",
+            "Audit History":"attendance_audit_history",
         }
     }
 }

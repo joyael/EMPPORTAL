@@ -197,6 +197,7 @@ class Timesheet(models.Model):
     project = models.CharField(max_length=255)  
     project_real = models.ForeignKey(Project, null=True, blank=True, on_delete=models.SET_NULL)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    leave_id_entry = models.IntegerField(null=True,blank=True)
 
     def __str__(self):
         return f'Timesheet for {self.date} - {self.hours}h {self.minutes}m {self.seconds}s'
@@ -244,10 +245,6 @@ class LeaveRequest(models.Model):
 
     def __str__(self):
         return f"{self.employee} - {self.leave_type} on {self.date} ({self.status})"
-
-
-
-
 
 
 class Attendance(models.Model):

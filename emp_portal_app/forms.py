@@ -288,44 +288,13 @@ class TimesheetForm(forms.ModelForm):
 
         starting_choices=[
             ('nil','Select Project'),
-            ('bench','Bench'),
         ]
         self.fields['project'].choices = starting_choices
-
-
-        # Custom choices
-        # custom_projects = [
-        #     ('bench', 'Bench'),
-        #     ('training', 'Training'),
-        #     ('learning', 'Learning'),
-        # ]
-            
-        # if self.logged_in_user.level() <= 1:
-        #     project_choices = []
-        #     projects = Project.objects.all()
-        #     for project in projects:
-        #         project_choices.append((project.project_name, project.project_name))
-        #     project_choices = project_choices + custom_projects
-        
-
-        # elif self.logged_in_user.level() == 2:
-        #     assigned_projects = ProjectAssignation.objects.filter(assigning_manager=self.logged_in_user).values_list('project__project_name', flat=True)
-        #     project_choices = [(project, project) for project in assigned_projects] + custom_projects
-        #     self.fields['project'].choices = project_choices
-
-        # else:
-        #     print("Checked the logged in user level")
-        #     assigned_projects = ProjectAssignation.objects.filter(employee=self.logged_in_user).values_list('project__project_name', flat=True)
-        #     for project in assigned_projects:
-        #         print(project)
-        #     project_choices = [(project, project) for project in assigned_projects] + custom_projects
-        #     for project in project_choices:
-        #         print(project)
-        #     self.fields['project'].choices = project_choices 
+ 
 
     def clean_project(self):
         project = self.cleaned_data.get('project')
-        valid_projects = [project.project_name for project in Project.objects.all()] + ['bench', 'learning', 'training']
+        valid_projects = [project.project_name for project in Project.objects.all()] + ['bench', 'learning', 'training', 'leave hours']
         if project not in valid_projects:
             raise forms.ValidationError("Invalid project. Please select a valid project or use 'bench', 'learning', or 'training'.")
         return project
@@ -384,7 +353,7 @@ class TimesheetUpdateForm(forms.ModelForm):
         self.fields['project'].choices = starting_choices
     def clean_project(self):
         project = self.cleaned_data.get('project')
-        valid_projects = [project.project_name for project in Project.objects.all()] + ['bench', 'learning', 'training']
+        valid_projects = [project.project_name for project in Project.objects.all()] + ['bench', 'learning', 'training', 'leave hours']
         if project not in valid_projects:
             raise forms.ValidationError("Invalid project. Please select a valid project or use 'bench', 'learning', or 'training'.")
         return project

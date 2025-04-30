@@ -54,9 +54,6 @@ function change_checkin_checkout_button(is_check_in){
         const elements_check_in_left = document.getElementsByClassName('semi-circle-left');
         const elements_check_in_right = document.getElementsByClassName('semi-circle-right');
         const elements_check_in_middle_part = document.getElementsByClassName('semicircle-button');
-        console.log("Semicircle left number of items : " + elements_check_in_left.length)
-        console.log("Semicircle middle number of items : " + elements_check_in_middle_part.length)
-        console.log("Semicircle right number of items : " + elements_check_in_right.length)
         
         // Update middle part elements
         for (let i = 0; i < elements_check_in_middle_part.length; i++) {
@@ -94,6 +91,7 @@ function change_checkin_checkout_button(is_check_in){
 
 function updateCheckInTime() {
     const checkInTimeElement = document.getElementById('checkintime');
+    const elements = document.getElementsByClassName('checkintime');
     const url = checkInTimeElement.getAttribute('data-time_update-url');
     function fetchTimeUpdate() {
         fetch(url, {
@@ -107,11 +105,14 @@ function updateCheckInTime() {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-            return response.json(); 
+            return response.json();
         })
         .then(data => {
             change_checkin_checkout_button(data.is_check_in);
             checkInTimeElement.innerHTML = `<p>${data.time_string}</p>`;
+            for (let i = 0; i < elements.length; i++) {
+                elements[i].innerHTML = `<p>${data.time_string}</p>`;
+            }
         })
         .catch(error => {
             console.error('There was a problem with the fetch operation:', error);
